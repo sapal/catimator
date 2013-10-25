@@ -1,0 +1,38 @@
+html, body, #editor, #scene {
+  height: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+#editor {
+  padding: 10px;
+}
+#scene {
+  background-color: gray;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+#camera {
+  position: relative;
+  width: 50%;
+  height: 0;
+  padding-bottom: 37.5%; 
+  background-color: white;
+  border: 5px dashed black;
+  box-sizing: content-box;
+  margin: 0;
+}
+#cat {
+  position: absolute;
+  width: 30%;
+}
+#fence {
+  position: absolute;
+  width: 75%;
+}
