@@ -4,6 +4,7 @@ html, body, #editor, #scene {
   height: 100%;
   margin: 0;
   padding: 0;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 #editor {
@@ -26,6 +27,7 @@ html, body, #editor, #scene {
   background-color: white;
   border: 5px dashed black;
   margin: 0;
+  -moz-box-sizing: content-box;
   box-sizing: content-box;
 }
 #cat {
