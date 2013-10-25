@@ -25,8 +25,8 @@ html, body, #editor, #scene {
   padding-bottom: 37.5%; 
   background-color: white;
   border: 5px dashed black;
-  box-sizing: content-box;
   margin: 0;
+  box-sizing: content-box;
 }
 #cat {
   position: absolute;
