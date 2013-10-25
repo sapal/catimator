@@ -22,19 +22,36 @@ html, body, #editor, #scene {
 #camera {
   position: relative;
   width: 50%;
-  height: 0;
-  padding-bottom: 37.5%; 
-  background-color: white;
   border: 5px dashed black;
   margin: 0;
   -moz-box-sizing: content-box;
   box-sizing: content-box;
 }
+#camera:before {
+  content: "";
+  display: block;
+  padding-top: 75%;
+}
+#background {
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 0;
+}
 #cat {
   position: absolute;
+  left: 0;
+  top: 0;
   width: 30%;
+  z-index: 1;
 }
 #fence {
   position: absolute;
+  left: 0;
+  top: 0;
   width: 75%;
+  z-index: 2;
 }
