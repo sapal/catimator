@@ -1,5 +1,4 @@
 html, body, #editor, #scene {
-  height: 100%;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -60,6 +59,14 @@ html, body, #editor, #scene {
   top: 0;
   height: 100%;
   background-color: red;
+}
+.animated-object {
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  -moz-user-drag: none;
+  -moz-user-select: none;
+  user-select: none;
+  user-drag: none;
 }
 #cat {
   position: absolute;
