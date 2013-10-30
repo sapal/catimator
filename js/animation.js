@@ -14,22 +14,28 @@ Keyframe.prototype.copy = function() {
   return new Keyframe(this.offset, this.position);
 };
 
+var animatedObjects = null;
 var started = false;
 var duration = 10;
+var selectedId = 0;
 var cat = null;
 var fence = null;
 var camera = null;
-var animation = null;
+var animations = {};
 var progress = null;
-var player = null;
+var players = {};
 var progressPlayer = null;
 var duration = 15;
-var keyframes = [];
+var keyframes = {};
 
 var restartAnimation = function() {
   started = true;
-  animation = generateAnimation(cat, keyframes, duration);
-  player = document.timeline.play(animation);
+  animations = {};
+  for (var i = 0; i < animatedObjects.length; i++) {
+    var o = animatedObjects[i];
+    var animation = generateAnimation(o, keyframes[o.id], duration);
+    players[o.id] = document.timeline.play(animation);
+  }
   progressPlayer = document.timeline.play(new Animation(bar, [
     {offset: 0.0, width: "0%"},
     {offset: 1.0, width: "100%"},
@@ -91,45 +97,59 @@ window.addEventListener("load", function() {
     e.preventDefault();
     return false;
   };
-  cat.addEventListener("dragstart", cancelDrag);
-  fence.addEventListener("dragstart", cancelDrag);
-  //restartAnimation();
+  animatedObjects = document.getElementsByClassName("animated-object");
+  for (var i = 0; i < animatedObjects.length; i++) {
+    animatedObjects[i].addEventListener("dragstart", cancelDrag);
+    keyframes[animatedObjects[i].id] = [];
+  }
   
   document.addEventListener("mousemove", function(e) {
+    var object = animatedObjects[selectedId];
     var position = 0.0;
     if (progressPlayer !== null) {
-      position = progressPlayer.currentTime; // - progressPlayer.startTime;
+      position = progressPlayer.currentTime;
       if (position > duration) position = duration;
     }
     var x = e.pageX;
     var y = e.pageY;
     if (isMouseButtonDown(e)) {
-      if (player !== null) {
-        player.paused = true;
-        player.source = null;
+      if (players[object.id] !== undefined) {
+        players[object.id].paused = true;
+        players[object.id].source = null;
       }
-      var xFraction = (x - camera.offsetLeft) / cat.width - 0.5;
-      var yFraction = (y - camera.offsetTop) / cat.height - 0.5;
+      var xFraction = (x - camera.offsetLeft) / object.width - 0.5;
+      var yFraction = (y - camera.offsetTop) / object.height - 0.5;
       var xPercent = 100 * xFraction;
       var yPercent = 100 * yFraction;
-      setTransform(cat, "translate(" + xPercent + "%, " + yPercent + "%)");
+      setTransform(object, "translate(" + xPercent + "%, " + yPercent + "%)");
       var offset = position / duration;
       if (offset == 0 || offset == duration) {
-        for (var i = 0; i < keyframes.length; i++) {
-          if (keyframes[i].offset == offset) {
-            keyframes.splice(i, 1);
+        for (var i = 0; i < keyframes[object.id].length; i++) {
+          if (keyframes[object.id][i].offset == offset) {
+            keyframes[object.id].splice(i, 1);
           }
         }
       }
-      keyframes.push(new Keyframe(offset, new Position(xFraction, yFraction)));
-    } else if (player !== null && player.source === null) {
-      animation = generateAnimation(cat, keyframes, duration);
-      player = document.timeline.play(animation);
-      player.currentTime += position;
+      keyframes[object.id].push(new Keyframe(offset, new Position(xFraction, yFraction)));
+    } else if (players[object.id] !== undefined && players[object.id].source === null) {
+      animations[object.id] = generateAnimation(object, keyframes[object.id], duration);
+      players[object.id] = document.timeline.play(animations[object.id]);
+      players[object.id].currentTime += position;
     }
   })
   
   progress.addEventListener("click", function() {
     restartAnimation();
+  });
+  
+  animatedObjects[selectedId].classList.toggle("selected");
+  document.addEventListener("keydown", function(e) {
+    var keyCode = e.keyCode || e.which; 
+    if (keyCode === 9) {
+      animatedObjects[selectedId].classList.toggle("selected");
+      selectedId = (selectedId + 1) % animatedObjects.length;
+      animatedObjects[selectedId].classList.toggle("selected");
+      e.preventDefault();
+    }
   });
 });
