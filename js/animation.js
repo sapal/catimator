@@ -194,4 +194,21 @@ window.addEventListener("load", function() {
     }
     return true;
   });
+  
+  var editor = document.getElementById('editor');
+  editor.addEventListener('drop', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    
+    var file = e.dataTransfer.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      keyframes = deserialize(e.target.result);
+    };
+    reader.readAsText(file);
+  }, false);
+  editor.addEventListener('dragover', function(e) {
+    e.stopPropagation();
+    e.preventDefault();
+  });
 });
