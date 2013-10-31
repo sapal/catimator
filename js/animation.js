@@ -43,7 +43,7 @@ var saveToFile = function(data, filename) {
   link.style.display = "none";
   document.body.appendChild(link);
   link.click();
-  link.remove();
+  document.body.removeChild(link);
 };
 
 var animatedObjects = null;
