@@ -5,13 +5,35 @@ var Position = function(x, y) {
   this.y = y;
 };
 
+Position.fromObject = function(o) {
+  return new Position(o.x, o.y);
+};
+
 var Keyframe = function(offset, position) {
   this.offset = offset;
   this.position = position;
 };
+
+Keyframe.fromObject = function(o) {
+  return new Keyframe(o.offset, Position.fromObject(o.position));
+};
 Keyframe.prototype = {};
 Keyframe.prototype.copy = function() {
   return new Keyframe(this.offset, this.position);
+};
+
+var serialize = function(keyframes) {
+  return JSON.stringify(keyframes);
+};
+
+var deserialize = function(string) {
+  var keyframes = JSON.parse(string);
+  for (var id in keyframes) {
+    keyframes[id] = keyframes[id].map(function(o) {
+      return Keyframe.fromObject(o);
+    });
+  }
+  return keyframes;
 };
 
 var animatedObjects = null;
