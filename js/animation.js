@@ -136,6 +136,9 @@ window.addEventListener("load", function() {
   }
   
   document.addEventListener("mousemove", function(e) {
+    if (selectedId == animatedObjects.length) {
+      return;
+    }
     var object = animatedObjects[selectedId];
     var position = 0.0;
     if (progressPlayer !== null) {
@@ -174,13 +177,18 @@ window.addEventListener("load", function() {
     restartAnimation();
   });
   
-  animatedObjects[selectedId].classList.toggle("selected");
+  // animatedObjects[selectedId].classList.toggle("selected");
+  selectedId = animatedObjects.length;
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
     if (keyCode === 9) {
-      animatedObjects[selectedId].classList.toggle("selected");
-      selectedId = (selectedId + 1) % animatedObjects.length;
-      animatedObjects[selectedId].classList.toggle("selected");
+      if (selectedId < animatedObjects.length) {
+        animatedObjects[selectedId].classList.toggle("selected");
+      }
+      selectedId = (selectedId + 1) % (animatedObjects.length + 1);
+      if (selectedId < animatedObjects.length) {
+        animatedObjects[selectedId].classList.toggle("selected");
+      }
       e.preventDefault();
     }
   });
