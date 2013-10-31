@@ -36,6 +36,16 @@ var deserialize = function(string) {
   return keyframes;
 };
 
+var saveToFile = function(data, filename) {
+  var link = document.createElement("a");
+  link.href = window.URL.createObjectURL(new Blob([data], {type:'text/plain'}));
+  link.download = filename;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
 var animatedObjects = null;
 var started = false;
 var duration = 10;
@@ -173,5 +183,15 @@ window.addEventListener("load", function() {
       animatedObjects[selectedId].classList.toggle("selected");
       e.preventDefault();
     }
+  });
+  
+  document.addEventListener("keydown", function(e) {
+    var keyCode = e.keyCode || e.which;
+    if (keyCode === 83 && e.ctrlKey) {
+      saveToFile("lol", "lol.txt");
+      e.preventDefault();
+      return false;
+    }
+    return true;
   });
 });
