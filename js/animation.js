@@ -188,7 +188,7 @@ window.addEventListener("load", function() {
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 83 && e.ctrlKey) {
-      saveToFile("lol", "lol.txt");
+      saveToFile(serialize(keyframes), "animation.txt");
       e.preventDefault();
       return false;
     }
