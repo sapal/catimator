@@ -48,7 +48,6 @@ var saveToFile = function(data, filename) {
 
 var animatedObjects = null;
 var started = false;
-var duration = 10;
 var selectedId = 0;
 var cat = null;
 var fence = null;
@@ -57,21 +56,48 @@ var animations = {};
 var progress = null;
 var players = {};
 var progressPlayer = null;
-var duration = 15;
+var duration = 150;
 var keyframes = {};
+var recordedKeyframes = {};
 
 var restartAnimation = function() {
   started = true;
   animations = {};
   for (var i = 0; i < animatedObjects.length; i++) {
     var o = animatedObjects[i];
+    updateKeyframes(o);
     var animation = generateAnimation(o, keyframes[o.id], duration);
+    if (players[o.id] && players[o.id].source) {
+      players[o.id]._deregisterFromTimeline();
+      players[o.id].paused = true;
+      players[o.id].source = null;
+    }
     players[o.id] = document.timeline.play(animation);
   }
   progressPlayer = document.timeline.play(new Animation(bar, [
     {offset: 0.0, width: "0%"},
     {offset: 1.0, width: "100%"},
   ], duration));
+};
+
+var updateKeyframes = function(object) {
+  keyframes[object.id] = addRecordedKeyframes(keyframes[object.id], recordedKeyframes[object.id]);
+  recordedKeyframes[object.id] = [];
+};
+
+var addRecordedKeyframes = function(keyframes, recordedKeyframes) {
+  if (recordedKeyframes.length == 0) return keyframes;
+  var minTime = recordedKeyframes[0].offset;
+  var maxTime = minTime;
+  for (var i = 0; i < recordedKeyframes.length; i++) {
+    var time = recordedKeyframes[i].offset;
+    minTime = Math.min(minTime, time);
+    maxTime = Math.max(maxTime, time);
+  }
+  var result = keyframes.filter(function(x) { 
+    return x.offset < minTime || x.offset > maxTime;
+  });
+  return result.concat(recordedKeyframes);
 };
 
 var generateAnimation = function(object, keyframes, duration) {
@@ -115,6 +141,9 @@ var isMouseButtonDown = function(e) {
 }
 
 var setTransform = function(element, transform) {
+  if (element.style._clearAnimatedProperty) {
+    element.style._clearAnimatedProperty("webkitTransform");
+  }
   element.style.transform = transform;
   element.style.webkitTransform = transform;
   element.style.mozTransform = transform;
@@ -133,6 +162,7 @@ window.addEventListener("load", function() {
   for (var i = 0; i < animatedObjects.length; i++) {
     animatedObjects[i].addEventListener("dragstart", cancelDrag);
     keyframes[animatedObjects[i].id] = [];
+    recordedKeyframes[animatedObjects[i].id] = [];
   }
   
   document.addEventListener("mousemove", function(e) {
@@ -148,7 +178,8 @@ window.addEventListener("load", function() {
     var x = e.pageX;
     var y = e.pageY;
     if (isMouseButtonDown(e)) {
-      if (players[object.id] !== undefined) {
+      if (players[object.id] && players[object.id].source) {
+        players[object.id]._deregisterFromTimeline(); 
         players[object.id].paused = true;
         players[object.id].source = null;
       }
@@ -158,15 +189,9 @@ window.addEventListener("load", function() {
       var yPercent = 100 * yFraction;
       setTransform(object, "translate(" + xPercent + "%, " + yPercent + "%)");
       var offset = position / duration;
-      if (offset == 0 || offset == duration) {
-        for (var i = 0; i < keyframes[object.id].length; i++) {
-          if (keyframes[object.id][i].offset == offset) {
-            keyframes[object.id].splice(i, 1);
-          }
-        }
-      }
-      keyframes[object.id].push(new Keyframe(offset, new Position(xFraction, yFraction)));
+      recordedKeyframes[object.id].push(new Keyframe(offset, new Position(xFraction, yFraction)));
     } else if (players[object.id] !== undefined && players[object.id].source === null) {
+      updateKeyframes(object);
       animations[object.id] = generateAnimation(object, keyframes[object.id], duration);
       players[object.id] = document.timeline.play(animations[object.id]);
       players[object.id].currentTime += position;
