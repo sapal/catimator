@@ -60,7 +60,7 @@ html, body, #editor, #scene {
   height: 100%;
   background-color: red;
 }
-.animated-object {
+* {
   -webkit-user-select: none;
   -webkit-user-drag: none;
   -moz-user-drag: none;
