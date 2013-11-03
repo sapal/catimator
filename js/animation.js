@@ -218,15 +218,21 @@ window.addEventListener("load", function() {
     }
   })
   
-  progress.addEventListener("click", function() {
+  var playPause = function() {
     var startedBefore = started;
     resetAnimation();
     if (!startedBefore) {
       playAnimation();
     }
+  };
+  progress.addEventListener("click", playPause);
+  document.addEventListener("keydown", function(e) {
+    var keyCode = e.keyCode || e.which; 
+    if (keyCode ===  32) {
+      playPause();
+    }
   });
   
-  // animatedObjects[selectedId].classList.toggle("selected");
   selectedId = animatedObjects.length;
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
