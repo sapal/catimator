@@ -58,8 +58,17 @@ var duration = 15;
 var keyframes = {};
 var recordedKeyframes = {};
 
-var restartAnimation = function() {
+var playAnimation = function() {
   started = true;
+  for (var i = 0; i < animatedObjects.length; i++) {
+    var o = animatedObjects[i];
+    players[o.id].paused = false;
+  }
+  progressPlayer.paused = false;
+};
+
+var resetAnimation = function() {
+  started = false;
   animations = {};
   for (var i = 0; i < animatedObjects.length; i++) {
     var o = animatedObjects[i];
@@ -71,11 +80,13 @@ var restartAnimation = function() {
       players[o.id].source = null;
     }
     players[o.id] = document.timeline.play(animation);
+    players[o.id].paused = true;
   }
   progressPlayer = document.timeline.play(new Animation(bar, [
     {offset: 0.0, width: "0%"},
     {offset: 1.0, width: "100%"},
   ], duration));
+  progressPlayer.paused = true;
 };
 
 var updateKeyframes = function(object) {
@@ -208,7 +219,11 @@ window.addEventListener("load", function() {
   })
   
   progress.addEventListener("click", function() {
-    restartAnimation();
+    var startedBefore = started;
+    resetAnimation();
+    if (!startedBefore) {
+      playAnimation();
+    }
   });
   
   // animatedObjects[selectedId].classList.toggle("selected");
@@ -246,6 +261,7 @@ window.addEventListener("load", function() {
     var reader = new FileReader();
     reader.onload = function(e) {
       keyframes = deserialize(e.target.result);
+      resetAnimation();
     };
     reader.readAsText(file);
   }, false);
