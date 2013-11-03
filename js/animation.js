@@ -80,22 +80,16 @@ var restartAnimation = function() {
 
 var updateKeyframes = function(object) {
   keyframes[object.id] = addRecordedKeyframes(keyframes[object.id], recordedKeyframes[object.id]);
-  var frames = {
-    0:[],
-    1:[],
-  };
+  var frames = {};
   for (var i = 0; i < keyframes[object.id].length; i++) {
     var keyframe = keyframes[object.id][i];
     if (keyframe.offset === 0 || keyframe.offset === 1) {
-      frames[keyframe.offset].push(keyframe);
+      frames[keyframe.offset] = keyframe;
     }
   }
   keyframes[object.id] = keyframes[object.id].filter(function(k) {
-    if (k.offset === 0) {
-      return frames[0].lenght === 0 || k === frames[0][frames[0].length-1];
-    }
-    if (k.offset === 1) {
-      return frames[1].lenght === 0 || k === frames[1][0];
+    if (k.offset === 0 || k.offset === 1) {
+      return frames[k.offset].lenght === 0 || k === frames[k.offset];
     }
     return true;
   });
