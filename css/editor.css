@@ -76,6 +76,9 @@ html, body, #editor, #scene {
 #cat-left, #cat-right {
   width: 30%;
 }
+#mouse-left, #mouse-right {
+  width: 30%;
+}
 #fence {
   width: 75%;
 }
