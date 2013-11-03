@@ -49,8 +49,6 @@ var saveToFile = function(data, filename) {
 var animatedObjects = null;
 var started = false;
 var selectedId = 0;
-var cat = null;
-var fence = null;
 var camera = null;
 var animations = {};
 var progress = null;
@@ -169,9 +167,7 @@ var setTransform = function(element, transform) {
 }
 
 window.addEventListener("load", function() {
-  cat = document.getElementById("cat");
   camera = document.getElementById("camera");
-  fence = document.getElementById("fence");
   progress = document.getElementById("progress");
   var cancelDrag = function(e) {
     e.preventDefault();

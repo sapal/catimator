@@ -68,19 +68,16 @@ html, body, #editor, #scene {
   user-select: none;
   user-drag: none;
 }
-#cat {
+.animated-object {
   position: absolute;
   left: 0;
   top: 0;
+}
+#cat-left, #cat-right {
   width: 30%;
-  z-index: 1;
 }
 #fence {
-  position: absolute;
-  left: 0;
-  top: 0;
   width: 75%;
-  z-index: 2;
 }
 .selected {
   background-color: rgba(0,255,0,.4);
