@@ -210,7 +210,7 @@ window.addEventListener("load", function() {
       setTransform(object, "translate(" + xPercent + "%, " + yPercent + "%)");
       var offset = position / duration;
       recordedKeyframes[object.id].push(new Keyframe(offset, new Position(xFraction, yFraction)));
-    } else if (players[object.id] !== undefined && players[object.id].source === null) {
+    } else if (players[object.id] !== undefined && players[object.id].source === null && started) {
       updateKeyframes(object);
       animations[object.id] = generateAnimation(object, keyframes[object.id], duration);
       players[object.id] = document.timeline.play(animations[object.id]);
