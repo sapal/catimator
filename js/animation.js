@@ -171,18 +171,73 @@ var setTransform = function(element, transform) {
   element.style.mozTransform = transform;
 }
 
-window.addEventListener("load", function() {
-  camera = document.getElementById("camera");
-  progress = document.getElementById("progress");
+var removeObject = function(object_id) {
+  for (var i = 0; i < animatedObjects.length; ++i) {
+    if (animatedObjects[i].id === object_id) {
+      if (selectedId > i) {
+        selectedId--;
+      }
+      animatedObjects.splice(i,1);
+    }
+  }
+  delete animations[object_id];
+  delete keyframes[object_id];
+  delete recordedKeyframes[object_id];
+  document.getElementById(object_id).remove();
+}
+
+var initObject = function(o) {
   var cancelDrag = function(e) {
     e.preventDefault();
     return false;
   };
-  animatedObjects = document.getElementsByClassName("animated-object");
-  for (var i = 0; i < animatedObjects.length; i++) {
-    animatedObjects[i].addEventListener("dragstart", cancelDrag);
-    keyframes[animatedObjects[i].id] = [];
-    recordedKeyframes[animatedObjects[i].id] = [];
+  animatedObjects.push(o);
+  o.addEventListener("dragstart", cancelDrag);
+  keyframes[o.id] = [];
+  recordedKeyframes[o.id] = [];
+}
+
+var addObject = function(object_id, img_source, width) {
+  var o = document.createElement("img");
+  o.src = img_source;
+  o.style.width = width;
+  o.alt = object_id;
+  o.classList.add("animated-object");
+  o.draggable = false;
+  initObject(o);
+  camera.appendChild(o);
+}
+
+window.addEventListener("load", function() {
+  camera = document.getElementById("camera");
+  progress = document.getElementById("progress");
+  
+  var animated = [{
+    "id": "cat-left",
+    "src": "../images/cat/cat_left.png",
+    "width": "30%"
+  },{
+    "id": "cat-right",
+    "src": "../images/cat/cat_right.png",
+    "width": "30%"
+  },{
+    "id": "mouse-left",
+    "src": "../images/mouse/mouse_left.png",
+    "width": "30%"
+  },{
+    "id": "mouse-right",
+    "src": "../images/mouse/mouse_right.png",
+    "width": "30%"
+  },{
+    "id": "fence",
+    "src": "../images/fence/fence.png",
+    "width": "75%"
+  }]
+  
+  animatedObjects = [];
+  for (var i = 0; i < animated.length; i++) {
+    var o = animated[i];
+    addObject(o["id"], o["src"], o["width"]);
   }
   
   document.addEventListener("mousemove", function(e) {
@@ -238,11 +293,11 @@ window.addEventListener("load", function() {
     var keyCode = e.keyCode || e.which; 
     if (keyCode === 9) {
       if (selectedId < animatedObjects.length) {
-        animatedObjects[selectedId].classList.toggle("selected");
+        animatedObjects[selectedId].classList.remove("selected");
       }
       selectedId = (selectedId + 1) % (animatedObjects.length + 1);
       if (selectedId < animatedObjects.length) {
-        animatedObjects[selectedId].classList.toggle("selected");
+        animatedObjects[selectedId].classList.add("selected");
       }
       e.preventDefault();
     }
