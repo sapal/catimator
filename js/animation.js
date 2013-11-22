@@ -57,6 +57,20 @@ Rotation.prototype.transformText = function() {
   return "rotate(" + this.r + "deg)";
 };
 
+var Scale = function(s) {
+  if (s === undefined) {
+    s = 1;
+  }
+  this.s = s;
+};
+Scale.prototype = {};
+Scale.fromObject = function(o) {
+  return new Scale(o.s);
+};
+Scale.prototype.transformText = function() {
+  return "scale(" + this.s + ")";
+};
+
 var Keyframe = function(offset, value) {
   this.offset = offset;
   this.value = value;
@@ -65,6 +79,7 @@ Keyframe.prototype = {};
 Keyframe.types = {
   "translation" : Position,
   "rotation" : Rotation,
+  "scale" : Scale,
 };
 Keyframe.fromObject = function(type, o) {
   return new Keyframe(o.offset, Keyframe.types[type].fromObject(o.value));
@@ -115,9 +130,7 @@ Actor.deserialize = function(string, camera) {
   for (var type in o.keyframes) {
     var k = o.keyframes[type].map(function(k) { return Keyframe.fromObject(type, k); });
     a.keyframes[type] = k;
-    if (k.length > 0) {
-      a.setTransform(type, k[0].value.transformText());
-    }
+    a.rewindType(type);
   }
   a.generateAnimation();
   return a;
@@ -142,6 +155,7 @@ Actor.prototype.createElements = function(camera) {
   this.rootElement = t;
   this.elements["translation"] = t;
   this.elements["rotation"] = r;
+  this.elements["scale"] = i;
 };
 Actor.prototype.deleteElements = function() {
   this.rootElement.remove();
@@ -229,6 +243,7 @@ Actor.prototype.stopType = function(type) {
 Actor.prototype.stop = function() {
   for (var type in Keyframe.types) {
     this.stopType(type);
+    this.rewindType(type);
   }
 };
 Actor.prototype.playType = function(type) {
@@ -244,6 +259,11 @@ Actor.prototype.play = function() {
 Actor.prototype.startRecording = function(type) {
   this.recordedType = type;
   this.stopType(type);
+};
+Actor.prototype.rewindType = function(type) {
+  if (this.keyframes[type].length > 0) {
+    this.setTransform(type, this.keyframes[type][0].value.transformText());
+  }
 };
 Actor.prototype.setTransform = function(type, transform) {
   var element = this.elements[type];
@@ -579,6 +599,14 @@ window.addEventListener("load", function() {
   cat.startRecording("translation");
   cat.recordKeyframe(new Keyframe(0.1, new Position(0, 0.9)));
   cat.recordKeyframe(new Keyframe(0.2, new Position(3.5, 2)));
+  cat.endRecording(0.0);
+  cat.startRecording("rotation");
+  cat.recordKeyframe(new Keyframe(0.1, new Rotation(90)));
+  cat.recordKeyframe(new Keyframe(0.2, new Rotation(-90)));
+  cat.endRecording(0.0);
+  cat.startRecording("scale");
+  cat.recordKeyframe(new Keyframe(0.1, new Scale(0.5)));
+  cat.recordKeyframe(new Keyframe(0.2, new Scale(2)));
   cat.endRecording(0.0);
   player.deserialize(player.serialize());
 });
