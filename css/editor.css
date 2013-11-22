@@ -73,6 +73,7 @@ html, body, #editor, #scene {
   left: 0;
   top: 0;
   display: block;
+  overflow: visible;
 }
 .animated-object img {
   display: block;

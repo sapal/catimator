@@ -269,10 +269,10 @@ Actor.prototype.setTransform = function(type, transform) {
   var element = this.elements[type];
   if (element.style._clearAnimatedProperty) {
     element.style._clearAnimatedProperty("webkitTransform");
+    element.style._clearAnimatedProperty("transform");
   }
   element.style.transform = transform;
   element.style.webkitTransform = transform;
-  element.style.mozTransform = transform;
 };
 Actor.prototype.recordKeyframe = function(keyframe) {
   this.recordedKeyframes.push(keyframe);
@@ -371,7 +371,7 @@ Player.prototype.startRecording = function(type, callback) {
   this._withSelected(function(a) {
     a.startRecording(type);
   });
-  this.recordingTimer = window.setInterval(callback, 25);
+  this.recordingTimer = window.setInterval(callback, 40);
 };
 Player.prototype.recordKeyframe = function(keyframe) {
   this._withSelected(function(a) {
@@ -605,6 +605,7 @@ window.addEventListener("load", function() {
   cat.recordKeyframe(new Keyframe(0.2, new Rotation(-90)));
   cat.endRecording(0.0);
   cat.startRecording("scale");
+  cat.recordKeyframe(new Keyframe(0.0, new Scale(2.5)));
   cat.recordKeyframe(new Keyframe(0.1, new Scale(0.5)));
   cat.recordKeyframe(new Keyframe(0.2, new Scale(2)));
   cat.endRecording(0.0);
