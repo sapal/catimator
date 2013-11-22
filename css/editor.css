@@ -72,15 +72,10 @@ html, body, #editor, #scene {
   position: absolute;
   left: 0;
   top: 0;
+  display: block;
 }
-#cat-left, #cat-right {
-  width: 30%;
-}
-#mouse-left, #mouse-right {
-  width: 30%;
-}
-#fence {
-  width: 75%;
+.animated-object img {
+  display: block;
 }
 .selected {
   background-color: rgba(0,255,0,.4);
