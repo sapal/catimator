@@ -1,41 +1,5 @@
 "use strict";
 
-var Position = function(x, y) {
-  this.x = x;
-  this.y = y;
-};
-
-Position.fromObject = function(o) {
-  return new Position(o.x, o.y);
-};
-
-var Keyframe = function(offset, position) {
-  this.offset = offset;
-  this.position = position;
-};
-
-Keyframe.fromObject = function(o) {
-  return new Keyframe(o.offset, Position.fromObject(o.position));
-};
-Keyframe.prototype = {};
-Keyframe.prototype.copy = function() {
-  return new Keyframe(this.offset, this.position);
-};
-
-var serialize = function(keyframes) {
-  return JSON.stringify(keyframes);
-};
-
-var deserialize = function(string) {
-  var keyframes = JSON.parse(string);
-  for (var id in keyframes) {
-    keyframes[id] = keyframes[id].map(function(o) {
-      return Keyframe.fromObject(o);
-    });
-  }
-  return keyframes;
-};
-
 var saveToFile = function(data, filename) {
   var link = document.createElement("a");
   link.href = window.URL.createObjectURL(new Blob([data], {type:'text/plain'}));
@@ -46,173 +10,469 @@ var saveToFile = function(data, filename) {
   document.body.removeChild(link);
 };
 
-var animatedObjects = null;
-var started = false;
-var selectedId = 0;
-var camera = null;
-var animations = {};
-var progress = null;
-var players = {};
-var progressPlayer = null;
-var duration = 15;
-var keyframes = {};
-var recordedKeyframes = {};
-
-var playAnimation = function() {
-  started = true;
-  for (var i = 0; i < animatedObjects.length; i++) {
-    var o = animatedObjects[i];
-    players[o.id].paused = false;
-  }
-  progressPlayer.paused = false;
-};
-
-var resetAnimation = function() {
-  started = false;
-  animations = {};
-  for (var i = 0; i < animatedObjects.length; i++) {
-    var o = animatedObjects[i];
-    updateKeyframes(o);
-    var animation = generateAnimation(o, keyframes[o.id], duration);
-    if (players[o.id] && players[o.id].source) {
-      players[o.id]._deregisterFromTimeline();
-      players[o.id].paused = true;
-      players[o.id].source = null;
-    }
-    players[o.id] = document.timeline.play(animation);
-    players[o.id].paused = true;
-  }
-  progressPlayer = document.timeline.play(new Animation(bar, [
-    {offset: 0.0, width: "0%"},
-    {offset: 1.0, width: "100%"},
-  ], duration));
-  progressPlayer.paused = true;
-};
-
-var updateKeyframes = function(object) {
-  keyframes[object.id] = addRecordedKeyframes(keyframes[object.id], recordedKeyframes[object.id]);
-  var frames = {};
-  for (var i = 0; i < keyframes[object.id].length; i++) {
-    var keyframe = keyframes[object.id][i];
-    if (keyframe.offset === 0 || keyframe.offset === 1) {
-      frames[keyframe.offset] = keyframe;
-    }
-  }
-  keyframes[object.id] = keyframes[object.id].filter(function(k) {
-    if (k.offset === 0 || k.offset === 1) {
-      return frames[k.offset].lenght === 0 || k === frames[k.offset];
-    }
-    return true;
+var stableSort = function(a, cmp) {
+  var b = a.map(function(el, i) {
+    return {idx: i, el: el};
   });
-  recordedKeyframes[object.id] = [];
+  b.sort(function(v1, v2) {
+    var c = cmp(v1.el, v2.el);
+    if (c === 0) {
+      return v1.idx - v2.idx;
+    } else {
+      return c;
+    }
+  });
+  return b.map(function(el) {
+    return el.el;
+  });
 };
 
-var addRecordedKeyframes = function(keyframes, recordedKeyframes) {
-  if (recordedKeyframes.length == 0) return keyframes;
-  var minTime = recordedKeyframes[0].offset;
+var Position = function(x, y) {
+  if (x === undefined && y === undefined) {
+    x = 0.5;
+    y = 0.5;
+  }
+  this.x = x;
+  this.y = y;
+};
+Position.prototype = {};
+Position.fromObject = function(o) {
+  return new Position(o.x, o.y);
+};
+Position.prototype.transformText = function() {
+  return "translate(" + ((this.x - 0.5) * 100) + "%, " + ((this.y - 0.5) * 100) + "%)";
+};
+
+var Rotation = function(r) {
+  if (r === undefined) {
+    r = 0;
+  }
+  this.r = r;
+};
+Rotation.prototype = {};
+Rotation.fromObject = function(o) {
+  return new Rotation(o.r);
+};
+Rotation.prototype.transformText = function() {
+  return "rotate(" + this.r + "deg)";
+};
+
+var Keyframe = function(offset, value) {
+  this.offset = offset;
+  this.value = value;
+};
+Keyframe.prototype = {};
+Keyframe.types = {
+  "translation" : Position,
+  "rotation" : Rotation,
+};
+Keyframe.fromObject = function(type, o) {
+  return new Keyframe(o.offset, Keyframe.types[type].fromObject(o.value));
+};
+Keyframe.ofType = function(offset, type) {
+  return new Keyframe(offset, new Keyframe.types[type]());
+};
+Keyframe.prototype.copy = function(offset) {
+  if (offset === undefined) {
+    offset = this.offset;
+  }
+  return new Keyframe(offset, this.value);
+};
+Keyframe.prototype.crop = function() {
+  this.offset = Math.max(0.0, Math.min(1.0, this.offset));
+};
+
+var Actor = function(id, image, width, duration) {
+  this.id = id;
+  this.image = image;
+  this.width = width;
+  this.duration = duration;
+  this.recordedKeyframes = [];
+  this.recordedType = null;
+  this.rootElement = null;
+  this.keyframes = {};
+  this.elements = {};
+  this.animations = {};
+  this.players = {};
+  for (var type in Keyframe.types) {
+    this.keyframes[type] = [];
+  }
+};
+Actor.prototype = {};
+Actor.prototype.serialize = function() {
+  return JSON.stringify({
+    "id" : this.id,
+    "image" : this.image,
+    "width" : this.width,
+    "duration" : this.duration,
+    "keyframes" : this.keyframes,
+  });
+};
+Actor.deserialize = function(string, camera) {
+  var o = JSON.parse(string);
+  var a = new Actor(o.id, o.image, o.width, o.duration);
+  a.createElements(camera);
+  for (var type in o.keyframes) {
+    var k = o.keyframes[type].map(function(k) { return Keyframe.fromObject(type, k); });
+    a.keyframes[type] = k;
+    if (k.length > 0) {
+      a.setTransform(type, k[0].value.transformText());
+    }
+  }
+  a.generateAnimation();
+  return a;
+};
+Actor.prototype.createElements = function(camera) {
+  var t = document.createElement("div");
+  var r = document.createElement("div");
+  var i = document.createElement("img");
+  t.style.width = this.width;
+  i.style.width = "100%";
+  i.src = this.image;
+  i.alt = this.id;
+  t.classList.add("animated-object");
+  t.dgraggable = false;
+  t.addEventListener("dragstart", function(e) {
+    e.preventDefault();
+    return false;
+  });
+  t.appendChild(r);
+  r.appendChild(i);
+  camera.appendChild(t);
+  this.rootElement = t;
+  this.elements["translation"] = t;
+  this.elements["rotation"] = r;
+};
+Actor.prototype.deleteElements = function() {
+  this.rootElement.remove();
+};
+Actor.prototype.generateAnimationType = function(type) {
+  var transforms = [];
+  var sortedKeyframes = stableSort(
+      this.keyframes[type],
+      function(k1, k2) {return k1.offset - k2.offset;});
+  var croppedKeyframes = [];
+  for (var i = 0; i < sortedKeyframes.length; ++i) {
+    sortedKeyframes[i].crop();
+  }
+  for (var i = 0; i < sortedKeyframes.length; ++i) {
+    var keyframe = sortedKeyframes[i];
+    if (i === sortedKeyframes.length - 1 || sortedKeyframes[i+1].offset !== keyframe.offset) {
+      croppedKeyframes.push(keyframe);
+    }
+  }
+  if (croppedKeyframes.length === 0) {
+    croppedKeyframes.push(Keyframe.ofType(0.0, type));
+  }
+  var first = croppedKeyframes[0];
+  var last = croppedKeyframes[croppedKeyframes.length - 1];
+  if (first.offset !== 0.0) {
+    croppedKeyframes.unshift(first.copy(0.0));
+  }
+  if (last.offset !== 1.0) {
+    croppedKeyframes.push(last.copy(1.0));
+  }
+  for (var i = 0; i < croppedKeyframes.length; ++i) {
+    var keyframe = croppedKeyframes[i];
+    transforms.push({
+      offset: keyframe.offset,
+      transform: keyframe.value.transformText(),
+    });
+  }
+  this.animations[type] = new Animation(this.elements[type], transforms, {duration: this.duration});
+};
+Actor.prototype.generateAnimation = function() {
+  for (var type in Keyframe.types) {
+    this.generateAnimationType(type);
+  }
+};
+Actor.prototype.saveRecordedKeyframes = function() {
+  if (this.recordedKeyframes.length === 0) {
+    return;
+  }
+  var minTime = this.recordedKeyframes[0].offset;
   var maxTime = minTime;
-  for (var i = 0; i < recordedKeyframes.length; i++) {
-    var time = recordedKeyframes[i].offset;
+  for (var i = 0; i < this.recordedKeyframes.length; ++i) {
+    var time = this.recordedKeyframes[i].offset;
     minTime = Math.min(minTime, time);
     maxTime = Math.max(maxTime, time);
   }
-  var result = keyframes.filter(function(x) { 
-    return x.offset < minTime || x.offset > maxTime;
+  var result = this.keyframes[this.recordedType].filter(function(k) {
+    return k.offset < minTime || maxTime < k.offset;
   });
-  return result.concat(recordedKeyframes);
+  this.keyframes[this.recordedType] = result.concat(this.recordedKeyframes);
+  this.generateAnimationType(this.recordedType);
 };
-
-var generateAnimation = function(object, keyframes, duration) {
-  var transforms = [];
-  var newKeyframes = keyframes.slice(0);
-  newKeyframes.sort(function(k1, k2) {return k1.offset - k2.offset;});
-  for (var i = 0; i < newKeyframes.length; i++) {
-    var keyframe = newKeyframes[i];
-    keyframe.offset = Math.max(0.0, Math.min(keyframe.offset, 1.0));
+Actor.prototype.pause = function() {
+  for (var type in Keyframe.types) {
+    if (this.players[type]) {
+      this.players[type].paused = true;
+    }
   }
-  if (newKeyframes.length === 0) {
-    newKeyframes.push(new Keyframe(0, new Position(0, 0)));
+};
+Actor.prototype.unpause = function() {
+  for (var type in Keyframe.types) {
+    if (this.players[type]) {
+      this.players[type].paused = false;
+    }
   }
-  if (newKeyframes[0].offset !== 0) {
-    newKeyframes = [newKeyframes[0].copy()].concat(newKeyframes);
-    newKeyframes[0].offset = 0;
+};
+Actor.prototype.stopType = function(type) {
+  if (this.players[type]) {
+    var player = this.players[type];
+    player._deregisterFromTimeline();
+    player.paused = true;
+    player.source = null;
+    this.players[type] = null;
   }
-  if (newKeyframes[newKeyframes.length - 1].offset !== 1) {
-    newKeyframes.push(newKeyframes[newKeyframes.length - 1].copy());
-    newKeyframes[newKeyframes.length - 1].offset = 1;
-  }
-  for (var i = 0; i < newKeyframes.length; i++) {
-    var keyframe = newKeyframes[i];
-    keyframe.offset = Math.max(0.0, Math.min(keyframe.offset, 1.0));
-    var xPercent = (keyframe.position.x * 100) + "%";
-    var yPercent = (keyframe.position.y * 100) + "%";
-    transforms.push({
-      offset: keyframe.offset, 
-      transform: "translate(" + xPercent + ", " + yPercent + ")",
-    });
-  }
-  return new Animation(object, transforms, {duration: duration});
 }
-
-var isMouseButtonDown = function(e) {
-  var button = e.which;
-  if (e.buttons !== undefined) {
-    button = e.buttons;
+Actor.prototype.stop = function() {
+  for (var type in Keyframe.types) {
+    this.stopType(type);
   }
-  return (button & 1) != 0;
-}
-
-var setTransform = function(element, transform) {
+};
+Actor.prototype.playType = function(type) {
+  if (this.animations[type]) {
+    this.players[type] = document.timeline.play(this.animations[type]);
+  }
+};
+Actor.prototype.play = function() {
+  for (var type in Keyframe.types) {
+    this.playType(type);
+  }
+};
+Actor.prototype.startRecording = function(type) {
+  this.recordedType = type;
+  this.stopType(type);
+};
+Actor.prototype.setTransform = function(type, transform) {
+  var element = this.elements[type];
   if (element.style._clearAnimatedProperty) {
     element.style._clearAnimatedProperty("webkitTransform");
   }
   element.style.transform = transform;
   element.style.webkitTransform = transform;
   element.style.mozTransform = transform;
-}
-
-var removeObject = function(object_id) {
-  for (var i = 0; i < animatedObjects.length; ++i) {
-    if (animatedObjects[i].id === object_id) {
-      if (selectedId > i) {
-        selectedId--;
-      }
-      animatedObjects.splice(i,1);
-    }
+};
+Actor.prototype.recordKeyframe = function(keyframe) {
+  this.recordedKeyframes.push(keyframe);
+  var transform = keyframe.value.transformText();
+  this.setTransform(this.recordedType, transform);
+};
+Actor.prototype.recording = function() {
+  return this.recordedType !== null;
+};
+Actor.prototype.endRecording = function(offset, play) {
+  if (!this.recording()) {
+    return;
   }
-  delete animations[object_id];
-  delete keyframes[object_id];
-  delete recordedKeyframes[object_id];
-  document.getElementById(object_id).remove();
-}
+  this.saveRecordedKeyframes();
+  if (play) {
+    this.playType(this.recordedType);
+    this.seekType(this.recordedType, offset);
+  }
+  this.recordedType = null;
+  this.recordedKeyframes = [];
+};
+Actor.prototype.seekType = function(type, offset) {
+  if (this.players[type]) {
+    this.players[type].currentTime += offset * this.duration;
+  }
+};
+Actor.prototype.select = function(selected) {
+  if (selected) {
+    this.rootElement.classList.add("selected");
+  } else {
+    this.rootElement.classList.remove("selected");
+  }
+};
+Actor.prototype.relativePosition = function(x, y) {
+  var e = this.elements["translation"];
+  return new Position(x / e.clientWidth, y / e.clientHeight);
+};
 
-var initObject = function(o) {
-  var cancelDrag = function(e) {
-    e.preventDefault();
-    return false;
-  };
-  animatedObjects.push(o);
-  o.addEventListener("dragstart", cancelDrag);
-  keyframes[o.id] = [];
-  recordedKeyframes[o.id] = [];
-}
+var Player = function(cameraElement, progressElement, duration) {
+  this.actors = [];
+  this.selected = 0;
+  this.cameraElement = cameraElement;
+  this.progressElement = progressElement;
+  this.duration = duration;
+  this.progressPlayer = null;
+  this.recordingTimer = null;
+};
+Player.prototype = {};
+Player.prototype.playing = function() {
+  return this.progressPlayer && this.progressPlayer.paused == false;
+};
+Player.prototype.addActor = function(id, image, width) {
+  var a = new Actor(id, image, width, this.duration);
+  a.createElements(this.cameraElement);
+  if (this.selected === this.actors.length) {
+    this.selected++;
+  }
+  this.actors.push(a);
+};
+Player.prototype._getActorIdx = function(id) {
+  for (var i = 0; i < this.actors.length; ++i) {
+    if (this.actors[i].id == id) return i;
+  }
+  console.log("Error: no such actor: " + id);
+  return -1;
+};
+Player.prototype.removeActor = function(id) {
+  var idx = this._getActorIdx(id);
+  this.actors[idx].deleteElements();
+  this.actors.splice(idx, 1);
+  if (idx < this.selected) {
+    this.selected--;
+  }
+  this._updateSelected();
+};
+Player.prototype.getActor = function(id) {
+  return this.actors[this._getActorIdx(id)];
+};
+Player.prototype._updateSelected = function() {
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].select(i === this.selected);
+  }
+};
+Player.prototype.selectNextActor = function() {
+  this.endRecording();
+  this.selected = (this.selected + 1) % (this.actors.length + 1);
+  this._updateSelected();
+};
+Player.prototype._withSelected = function(f) {
+  if (this.selected === this.actors.length) {
+    return;
+  }
+  return f(this.actors[this.selected]);
+};
+Player.prototype.startRecording = function(type, callback) {
+  this._withSelected(function(a) {
+    a.startRecording(type);
+  });
+  this.recordingTimer = window.setInterval(callback, 25);
+};
+Player.prototype.recordKeyframe = function(keyframe) {
+  this._withSelected(function(a) {
+    a.recordKeyframe(keyframe);
+  });
+};
+Player.prototype.endRecording = function() {
+  var position = this.position();
+  var playing = this.playing();
+  this._withSelected(function(a) {
+    a.endRecording(position, playing);
+  });
+  window.clearInterval(this.recordingTimer);
+  this.recordingTimer = null;
+};
+Player.prototype.play = function() {
+  if (this.playing()) {
+    return;
+  }
+  this.progressPlayer = document.timeline.play(new Animation(
+        this.progressElement, [
+          {offset: 0.0, width: "0%"},
+          {offset: 1.0, width: "100%"},
+        ], this.duration));
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].play();
+  }
+};
+Player.prototype.stop = function() {
+  if (this.progressPlayer === null) {
+    return;
+  }
+  this.progressPlayer._deregisterFromTimeline(); 
+  this.progressPlayer.paused = true;
+  this.progressPlayer.source = null;
+  this.progressPlayer = null;
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].stop();
+  }
+};
+Player.prototype.pause = function() {
+  if (this.progressPlayer && !this.paused()) {
+    this.progressPlayer.paused = true;
+  }
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].pause();
+  }
+};
+Player.prototype.unpause = function() {
+  if (this.progressPlayer && this.paused()) {
+    this.progressPlayer.paused = false;
+  }
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].unpause();
+  }
+};
+Player.prototype.paused = function() {
+  return (this.progressPlayer && this.progressPlayer.paused === true);
+};
+Player.prototype.position = function() {
+  if (!this.progressPlayer) {
+    return 0.0;
+  }
+  return Math.min(1.0, this.progressPlayer.currentTime / this.duration);
+};
+Player.prototype.recording = function() {
+  return this._withSelected(function(a) {
+    return a.recording();
+  });
+};
+Player.prototype.positionForSelected = function(x, y) {
+  return this._withSelected(function(a) {
+    return a.relativePosition(x, y);
+  });
+};
+Player.prototype.deleteActors = function() {
+  this.stop();
+  this.endRecording();
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].deleteElements();
+  }
+  this.actors = [];
+  this.selected = 0;
+};
+Player.prototype.serialize = function() {
+  var actors = this.actors.map(function(a) {
+    return a.serialize();
+  });
+  return JSON.stringify({
+    "duration" : this.duration,
+    "actors" : actors,
+  });
+};
+Player.prototype.deserialize = function(string) {
+  this.deleteActors();
+  var o = JSON.parse(string);
+  this.duration = o.duration;
+  var camera = this.cameraElement;
+  this.actors = o.actors.map(function(s) {
+    var a = Actor.deserialize(s, camera);
+    return a;
+  });
+  this.selected = this.actors.length;
+};
 
-var addObject = function(object_id, img_source, width) {
-  var o = document.createElement("img");
-  o.src = img_source;
-  o.style.width = width;
-  o.alt = object_id;
-  o.classList.add("animated-object");
-  o.draggable = false;
-  initObject(o);
-  camera.appendChild(o);
-}
+var player = null;
+
+var isMouseButtonDown = function(e) {
+  var button = e.buttons || e.which;
+  return (button & 1) !== 0;
+};
 
 window.addEventListener("load", function() {
-  camera = document.getElementById("camera");
-  progress = document.getElementById("progress");
-  
-  var animated = [{
+  var mouseX = 0;
+  var mouseY = 0;
+  var camera = document.getElementById("camera");
+  var progress = document.getElementById("progress");
+  var bar = document.getElementById("bar");
+  player = new Player(camera, bar, 15);
+
+  var someActors = [{
     "id": "cat-left",
     "src": "../images/cat/cat_left.png",
     "width": "30%"
@@ -232,54 +492,54 @@ window.addEventListener("load", function() {
     "id": "fence",
     "src": "../images/fence/fence.png",
     "width": "75%"
-  }]
-  
-  animatedObjects = [];
-  for (var i = 0; i < animated.length; i++) {
-    var o = animated[i];
-    addObject(o["id"], o["src"], o["width"]);
+  }];
+
+  for (var i = 0; i < someActors.length; ++i) {
+    var a = someActors[i];
+    player.addActor(a["id"], a["src"], a["width"]);
   }
-  
+
+  document.addEventListener("keydown", function(e) {
+    var keyCode = e.keyCode || e.which;
+    if (keyCode === 9) { // Tab
+      player.selectNextActor();
+      e.preventDefault();
+    }
+  });
+
+  document.addEventListener("mousedown", function(e) {
+    player.startRecording("translation", function() {
+      var offset = player.position();
+      var position = player.positionForSelected(mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
+      player.recordKeyframe(new Keyframe(offset, position));
+    });
+  });
+
   document.addEventListener("mousemove", function(e) {
-    if (selectedId == animatedObjects.length) {
-      return;
+    mouseX = e.pageX;
+    mouseY = e.pageY;
+  });
+
+  document.addEventListener("mouseup", function(e) {
+    if (player.recording()) {
+      player.endRecording();
     }
-    var object = animatedObjects[selectedId];
-    var position = 0.0;
-    if (progressPlayer !== null) {
-      position = progressPlayer.currentTime;
-      if (position > duration) position = duration;
-    }
-    var x = e.pageX;
-    var y = e.pageY;
-    if (isMouseButtonDown(e)) {
-      if (players[object.id] && players[object.id].source) {
-        players[object.id]._deregisterFromTimeline(); 
-        players[object.id].paused = true;
-        players[object.id].source = null;
-      }
-      var xFraction = (x - camera.offsetLeft) / object.width - 0.5;
-      var yFraction = (y - camera.offsetTop) / object.height - 0.5;
-      var xPercent = 100 * xFraction;
-      var yPercent = 100 * yFraction;
-      setTransform(object, "translate(" + xPercent + "%, " + yPercent + "%)");
-      var offset = position / duration;
-      recordedKeyframes[object.id].push(new Keyframe(offset, new Position(xFraction, yFraction)));
-    } else if (players[object.id] !== undefined && players[object.id].source === null && started) {
-      updateKeyframes(object);
-      animations[object.id] = generateAnimation(object, keyframes[object.id], duration);
-      players[object.id] = document.timeline.play(animations[object.id]);
-      players[object.id].currentTime += position;
-    }
-  })
-  
+  });
+
   var playPause = function() {
-    var startedBefore = started;
-    resetAnimation();
-    if (!startedBefore) {
-      playAnimation();
+    if (player.paused()) {
+      player.unpause();
+    } else {
+      if (player.position() === 0) {
+        player.play();
+      } else if (player.position() === 1) {
+        player.stop();
+      } else {
+        player.pause();
+      }
     }
   };
+
   progress.addEventListener("click", playPause);
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
@@ -287,32 +547,17 @@ window.addEventListener("load", function() {
       playPause();
     }
   });
-  
-  selectedId = animatedObjects.length;
-  document.addEventListener("keydown", function(e) {
-    var keyCode = e.keyCode || e.which; 
-    if (keyCode === 9) {
-      if (selectedId < animatedObjects.length) {
-        animatedObjects[selectedId].classList.remove("selected");
-      }
-      selectedId = (selectedId + 1) % (animatedObjects.length + 1);
-      if (selectedId < animatedObjects.length) {
-        animatedObjects[selectedId].classList.add("selected");
-      }
-      e.preventDefault();
-    }
-  });
-  
+
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which;
-    if (keyCode === 83 && e.ctrlKey) {
-      saveToFile(serialize(keyframes), "animation.txt");
+    if (keyCode === 83 && e.ctrlKey) { // Ctrl + S
+      saveToFile(player.serialize(), "animation.txt");
       e.preventDefault();
       return false;
     }
     return true;
   });
-  
+
   var editor = document.getElementById('editor');
   editor.addEventListener('drop', function(e) {
     e.stopPropagation();
@@ -321,8 +566,7 @@ window.addEventListener("load", function() {
     var file = e.dataTransfer.files[0];
     var reader = new FileReader();
     reader.onload = function(e) {
-      keyframes = deserialize(e.target.result);
-      resetAnimation();
+      player.deserialize(e.target.result);
     };
     reader.readAsText(file);
   }, false);
@@ -330,4 +574,12 @@ window.addEventListener("load", function() {
     e.stopPropagation();
     e.preventDefault();
   });
+
+  var cat = player.getActor("cat-right");
+  cat.startRecording("translation");
+  cat.recordKeyframe(new Keyframe(0.1, new Position(0, 0.9)));
+  cat.recordKeyframe(new Keyframe(0.2, new Position(3.5, 2)));
+  cat.endRecording(0.0);
+  player.deserialize(player.serialize());
 });
+
