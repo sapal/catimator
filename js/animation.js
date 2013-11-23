@@ -398,14 +398,22 @@ Player.prototype._getActorIdx = function(id) {
   console.log("Error: no such actor: " + id);
   return -1;
 };
-Player.prototype.removeActor = function(id) {
-  var idx = this._getActorIdx(id);
+Player.prototype._removeActor = function(idx) {
+  if (idx < 0 || this.actors.length <= idx) {
+    return;
+  }
   this.actors[idx].deleteElements();
   this.actors.splice(idx, 1);
   if (idx < this.selected) {
     this.selected--;
   }
   this._updateSelected();
+};
+Player.prototype.removeActor = function(id) {
+  this._removeActor(this._getActorIdx(id));
+};
+Player.prototype.removeSelectedActor = function() {
+  this._removeActor(this.selected);
 };
 Player.prototype.getActor = function(id) {
   return this.actors[this._getActorIdx(id)];
@@ -697,6 +705,12 @@ window.addEventListener("load", function() {
     var keyCode = e.keyCode || e.which; 
     if (toolbox.toolSelected() && keyCode ===  32) { // Space
       playPause();
+    }
+  });
+  document.addEventListener("keydown", function(e) {
+    var keyCode = e.keyCode || e.which; 
+    if (toolbox.toolSelected() && keyCode ===  46) { // Delete
+      player.removeSelectedActor();
     }
   });
 
