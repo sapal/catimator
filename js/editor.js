@@ -77,33 +77,6 @@ window.addEventListener("load", function() {
   player = new Player(camera, bar, 10);
   toolbox = new Toolbox(document.getElementById("toolbox"), player);
 
-  var someActors = [{
-    "id": "cat-left",
-    "src": "../images/cat/cat_left.png",
-    "width": "30%"
-  },{
-    "id": "cat-right",
-    "src": "../images/cat/cat_right.png",
-    "width": "30%"
-  },{
-    "id": "mouse-left",
-    "src": "../images/mouse/mouse_left.png",
-    "width": "30%"
-  },{
-    "id": "mouse-right",
-    "src": "../images/mouse/mouse_right.png",
-    "width": "30%"
-  },{
-    "id": "fence",
-    "src": "../images/fence/fence.png",
-    "width": "75%"
-  }];
-
-  for (var i = 0; i < someActors.length; ++i) {
-    var a = someActors[i];
-    player.addActor(a["id"], a["src"], a["width"]);
-  }
-
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which;
     if (keyCode === 9) { // Tab
@@ -197,25 +170,6 @@ window.addEventListener("load", function() {
     e.preventDefault();
   });
 
-  var cat = player.getActor("cat-right");
-  cat.startRecording("translation");
-  cat.recordKeyframe(new Keyframe(0.1, new Position(0, 0.9)));
-  cat.recordKeyframe(new Keyframe(0.2, new Position(3.5, 2)));
-  cat.endRecording(0.0);
-  cat.startRecording("rotation");
-  cat.recordKeyframe(new Keyframe(0.1, new Rotation(90)));
-  cat.recordKeyframe(new Keyframe(0.2, new Rotation(-90)));
-  cat.endRecording(0.0);
-  cat.startRecording("scale");
-  cat.recordKeyframe(new Keyframe(0.0, new Scale(2.5)));
-  cat.recordKeyframe(new Keyframe(0.1, new Scale(0.5)));
-  cat.recordKeyframe(new Keyframe(0.2, new Scale(2)));
-  cat.endRecording(0.0);
-  cat.startRecording("opacity");
-  cat.recordKeyframe(new Keyframe(0.0, new Opacity(0.1)));
-  cat.recordKeyframe(new Keyframe(0.1, new Opacity(1)));
-  cat.recordKeyframe(new Keyframe(0.2, new Opacity(0.2)));
-  cat.endRecording(0.0);
-  player.deserialize(player.serialize());
+  player.deserialize(animation);
 });
 
