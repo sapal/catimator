@@ -42,7 +42,6 @@ var Toolbox = function(rootElement, player) {
     toolbox.player.addActor(id, image, "50%");
   });
   document.getElementById("share-button").addEventListener("click", function(e) {
-    console.log(player.serialize());
     document.getElementById("animation-data").value = player.serialize();
   });
 };
