@@ -6,6 +6,24 @@ html, body, #editor, #scene {
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
+#toolbox {
+  float: left;
+  position: absolute;
+  left: 10px;
+  right: 10px;
+}
+#toolbox div {
+  position: relative;
+  border: 1px solid black;
+  border-radius: 100%;
+  padding: 25px;
+  margin: 5px;
+  display: inline-block;
+  justify-content: center;
+  align-items: center;
+  background-color: red;
+  z-index: 1;
+}
 #editor {
   padding: 10px;
 }
