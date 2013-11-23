@@ -597,7 +597,7 @@ Toolbox.prototype.keyframeValue = function(tool, actor, startX, startY, mouseX, 
   } else if (tool === "rotation") {
     return new Rotation(90-Math.atan2(- mouse.y + position.y, mouse.x - position.x) / Math.PI * 180);
   } else if (tool === "opacity") {
-    return new Opacity(-delta.y);
+    return new Opacity(1-delta.y);
   }
 };
 
