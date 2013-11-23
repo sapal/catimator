@@ -134,6 +134,7 @@ var Actor = function(id, image, width, duration) {
   this.width = width;
   this.duration = duration;
   this.recordedKeyframes = [];
+  this.cameraElement = null;
   this.recordedType = null;
   this.rootElement = null;
   this.keyframes = {};
@@ -167,6 +168,7 @@ Actor.deserialize = function(string, camera) {
   return a;
 };
 Actor.prototype.createElements = function(camera) {
+  this.cameraElement = camera;
   var t = document.createElement("div");
   var r = document.createElement("div");
   var s = document.createElement("div");
@@ -360,6 +362,13 @@ Actor.prototype.relativePosition = function(x, y) {
   var e = this.elements["translation"];
   return new Position(x / e.clientWidth, y / e.clientHeight);
 };
+Actor.prototype.position = function(camera) {
+  var e = this.elements["translation"];
+  var r = e.getClientRects()[0];
+  return this.relativePosition(
+      (r.left + r.right)/2 - this.cameraElement.offsetLeft,
+      (r.top + r.bottom)/2 - this.cameraElement.offsetTop);
+};
 
 var Player = function(cameraElement, progressElement, duration) {
   this.actors = [];
@@ -494,11 +503,6 @@ Player.prototype.recording = function() {
     return a.recording();
   });
 };
-Player.prototype.positionForSelected = function(x, y) {
-  return this._withSelected(function(a) {
-    return a.relativePosition(x, y);
-  });
-};
 Player.prototype.deleteActors = function() {
   this.stop();
   this.endRecording();
@@ -528,13 +532,69 @@ Player.prototype.deserialize = function(string) {
   });
   this.selected = this.actors.length;
 };
+Player.prototype.selectedActor = function() {
+  return this.actors[this.selected];
+};
+
+var Toolbox = function(rootElement, player) {
+  this.rootElement = rootElement;
+  this.player = player;
+  this.buttons = rootElement.children;
+  this.selected = 0;
+  this.select(0);
+  var toolbox = this;
+  for (var i = 0; i < this.buttons.length; ++i) {
+    (function(idx) {
+      var button = toolbox.buttons[idx];
+      button.addEventListener("mousedown", function(e) {
+        e.stopPropagation();
+        return false;
+      });
+      button.addEventListener("click", function(e) {
+        toolbox.select(idx);
+        e.stopPropagation();
+        return false;
+      });
+      document.addEventListener("keypress", function(e) {
+        var keyCode = e.keyCode || e.which;
+        console.log(e);
+        if (keyCode === button.id.charCodeAt(0)) {
+          toolbox.select(idx);
+          e.stopPropagation();
+          return false;
+        }
+        return true;
+      });
+    })(i);
+  }
+};
+Toolbox.prototype = {};
+Toolbox.prototype.select = function(idx) {
+  this.buttons[this.selected].classList.remove("selected");
+  this.selected = idx;
+  this.buttons[this.selected].classList.add("selected");
+};
+Toolbox.prototype.tool = function() {
+  return this.buttons[this.selected].id;
+};
+Toolbox.prototype.keyframeValue = function(tool, actor, startX, startY, mouseX, mouseY) {
+  var start = actor.relativePosition(startX, startY);
+  var mouse = actor.relativePosition(mouseX, mouseY);
+  var delta = actor.relativePosition(mouseX - startX, mouseY - startY);
+  var position = actor.position();
+  if (tool === "translation") {
+    return mouse;
+  } else if (tool === "scale") {
+    return new Scale(Math.exp(-delta.y));
+  } else if (tool === "rotation") {
+    return new Rotation(90-Math.atan2(- mouse.y + position.y, mouse.x - position.x) / Math.PI * 180);
+  } else if (tool === "opacity") {
+    return new Opacity(Math.exp(-delta.y));
+  }
+};
 
 var player = null;
-
-var isMouseButtonDown = function(e) {
-  var button = e.buttons || e.which;
-  return (button & 1) !== 0;
-};
+var toolbox = null;
 
 window.addEventListener("load", function() {
   var mouseX = 0;
@@ -542,7 +602,8 @@ window.addEventListener("load", function() {
   var camera = document.getElementById("camera");
   var progress = document.getElementById("progress");
   var bar = document.getElementById("bar");
-  player = new Player(camera, bar, 15);
+  player = new Player(camera, bar, 10);
+  toolbox = new Toolbox(document.getElementById("toolbox"), player);
 
   var someActors = [{
     "id": "cat-left",
@@ -580,10 +641,15 @@ window.addEventListener("load", function() {
   });
 
   document.addEventListener("mousedown", function(e) {
-    player.startRecording("translation", function() {
+    var startX = mouseX;
+    var startY = mouseY;
+    player.startRecording(toolbox.tool(), function() {
       var offset = player.position();
-      var position = player.positionForSelected(mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
-      player.recordKeyframe(new Keyframe(offset, position));
+      var selected = player.selectedActor();
+      var value = toolbox.keyframeValue(toolbox.tool(), selected,
+        startX - camera.offsetLeft, startY - camera.offsetTop,
+        mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
+      player.recordKeyframe(new Keyframe(offset, value));
     });
   });
 
@@ -612,6 +678,10 @@ window.addEventListener("load", function() {
     }
   };
 
+  progress.addEventListener("mousedown", function(e) {
+    e.stopPropagation();
+    return false;
+  });
   progress.addEventListener("click", playPause);
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 

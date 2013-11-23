@@ -24,7 +24,7 @@ html, body, #editor, #scene {
   background-color: red;
   z-index: 1;
 }
-#toolbox div .selected {
+#toolbox div.selected {
   background-color: green;
 }
 #editor {
