@@ -78,6 +78,6 @@ html, body, #editor, #scene {
 .animated-object img {
   display: block;
 }
-.selected img {
+.selected .scale {
   background-color: rgba(0,255,0,.4);
 }

@@ -39,8 +39,12 @@ Position.prototype = {};
 Position.fromObject = function(o) {
   return new Position(o.x, o.y);
 };
-Position.prototype.transformText = function() {
-  return "translate(" + ((this.x - 0.5) * 100) + "%, " + ((this.y - 0.5) * 100) + "%)";
+Position.prototype.getProperty = function() {
+  return {
+    "name" : "transform",
+    "value" : "translate(" + ((this.x - 0.5) * 100) + "%, " + ((this.y - 0.5) * 100) + "%)",
+    "prefixed" : "true",
+  };
 };
 
 var Rotation = function(r) {
@@ -53,8 +57,12 @@ Rotation.prototype = {};
 Rotation.fromObject = function(o) {
   return new Rotation(o.r);
 };
-Rotation.prototype.transformText = function() {
-  return "rotate(" + this.r + "deg)";
+Rotation.prototype.getProperty = function() {
+  return {
+    "name" : "transform",
+    "value" : "rotate(" + this.r + "deg)",
+    "prefixed" : true,
+  };
 };
 
 var Scale = function(s) {
@@ -67,8 +75,30 @@ Scale.prototype = {};
 Scale.fromObject = function(o) {
   return new Scale(o.s);
 };
-Scale.prototype.transformText = function() {
-  return "scale(" + this.s + ")";
+Scale.prototype.getProperty = function() {
+  return {
+    "name" : "transform",
+    "value" : "scale(" + this.s + ")",
+    "prefixed" : true,
+  };
+};
+
+var Opacity = function(o) {
+  if (o === undefined) {
+    o = 1;
+  }
+  this.o = o;
+};
+Opacity.prototype = {};
+Opacity.fromObject = function(o) {
+  return new Opacity(o.o);
+};
+Opacity.prototype.getProperty = function() {
+  return {
+    "name" : "opacity",
+    "value" : this.o,
+    "prefixed" : false,
+  };
 };
 
 var Keyframe = function(offset, value) {
@@ -80,6 +110,7 @@ Keyframe.types = {
   "translation" : Position,
   "rotation" : Rotation,
   "scale" : Scale,
+  "opacity" : Opacity,
 };
 Keyframe.fromObject = function(type, o) {
   return new Keyframe(o.offset, Keyframe.types[type].fromObject(o.value));
@@ -138,6 +169,8 @@ Actor.deserialize = function(string, camera) {
 Actor.prototype.createElements = function(camera) {
   var t = document.createElement("div");
   var r = document.createElement("div");
+  var s = document.createElement("div");
+  s.classList.add("scale");
   var i = document.createElement("img");
   t.style.width = this.width;
   i.style.width = "100%";
@@ -150,12 +183,14 @@ Actor.prototype.createElements = function(camera) {
     return false;
   });
   t.appendChild(r);
-  r.appendChild(i);
+  r.appendChild(s);
+  s.appendChild(i);
   camera.appendChild(t);
   this.rootElement = t;
   this.elements["translation"] = t;
   this.elements["rotation"] = r;
-  this.elements["scale"] = i;
+  this.elements["scale"] = s;
+  this.elements["opacity"] = i;
 };
 Actor.prototype.deleteElements = function() {
   this.rootElement.remove();
@@ -175,6 +210,7 @@ Actor.prototype.generateAnimationType = function(type) {
       croppedKeyframes.push(keyframe);
     }
   }
+  this.keyframes[type] = croppedKeyframes.slice(0);
   if (croppedKeyframes.length === 0) {
     croppedKeyframes.push(Keyframe.ofType(0.0, type));
   }
@@ -188,10 +224,12 @@ Actor.prototype.generateAnimationType = function(type) {
   }
   for (var i = 0; i < croppedKeyframes.length; ++i) {
     var keyframe = croppedKeyframes[i];
-    transforms.push({
+    var prop = keyframe.value.getProperty();
+    var transform = {
       offset: keyframe.offset,
-      transform: keyframe.value.transformText(),
-    });
+    };
+    transform[prop.name] = prop.value;
+    transforms.push(transform);
   }
   this.animations[type] = new Animation(this.elements[type], transforms, {duration: this.duration});
 };
@@ -262,22 +300,34 @@ Actor.prototype.startRecording = function(type) {
 };
 Actor.prototype.rewindType = function(type) {
   if (this.keyframes[type].length > 0) {
-    this.setTransform(type, this.keyframes[type][0].value.transformText());
+    this.setProperty(type, this.keyframes[type][0].value.getProperty());
   }
 };
-Actor.prototype.setTransform = function(type, transform) {
-  var element = this.elements[type];
-  if (element.style._clearAnimatedProperty) {
-    element.style._clearAnimatedProperty("webkitTransform");
-    element.style._clearAnimatedProperty("transform");
+Actor.prototype.setProperty = function(type, property) {
+  var prefixedName = function(name, prefix) {
+    if (prefix === "") {
+      return name;
+    } else {
+      return prefix + name.charAt(0).toUpperCase() + name.slice(1); 
+    }
+  };
+  var prefixes = [""];
+  if (property.prefixed) {
+    prefixes.push("webkit");
   }
-  element.style.transform = transform;
-  element.style.webkitTransform = transform;
+  for (var i = 0; i < prefixes.length; ++i) {
+    var name = prefixedName(property.name, prefixes[i]);
+    var element = this.elements[type];
+    if (element.style._clearAnimatedProperty) {
+      element.style._clearAnimatedProperty(name);
+    }
+    element.style[name] = property.value;
+  }
 };
 Actor.prototype.recordKeyframe = function(keyframe) {
   this.recordedKeyframes.push(keyframe);
-  var transform = keyframe.value.transformText();
-  this.setTransform(this.recordedType, transform);
+  var property = keyframe.value.getProperty();
+  this.setProperty(this.recordedType, property);
 };
 Actor.prototype.recording = function() {
   return this.recordedType !== null;
@@ -608,6 +658,11 @@ window.addEventListener("load", function() {
   cat.recordKeyframe(new Keyframe(0.0, new Scale(2.5)));
   cat.recordKeyframe(new Keyframe(0.1, new Scale(0.5)));
   cat.recordKeyframe(new Keyframe(0.2, new Scale(2)));
+  cat.endRecording(0.0);
+  cat.startRecording("opacity");
+  cat.recordKeyframe(new Keyframe(0.0, new Opacity(0.1)));
+  cat.recordKeyframe(new Keyframe(0.1, new Opacity(1)));
+  cat.recordKeyframe(new Keyframe(0.2, new Opacity(0.2)));
   cat.endRecording(0.0);
   player.deserialize(player.serialize());
 });
