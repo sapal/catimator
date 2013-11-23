@@ -27,6 +27,22 @@ html, body, #editor, #scene {
 #toolbox div.selected {
   background-color: green;
 }
+#add {
+  text-align: center;
+  justify-content: center;
+}
+#add.selected {
+  width: 300px;
+  height: 300px;
+  display: flex;
+  margin: auto;
+}
+#add.selected .button-content, #add .button-text {
+  display: inline;
+}
+#add .button-content, #add.selected .button-text {
+  display: none;
+}
 #editor {
   padding: 10px;
 }

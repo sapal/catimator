@@ -557,8 +557,7 @@ var Toolbox = function(rootElement, player) {
       });
       document.addEventListener("keypress", function(e) {
         var keyCode = e.keyCode || e.which;
-        console.log(e);
-        if (keyCode === button.id.charCodeAt(0)) {
+        if (toolbox.toolSelected() && keyCode === button.id.charCodeAt(0)) {
           toolbox.select(idx);
           e.stopPropagation();
           return false;
@@ -567,9 +566,18 @@ var Toolbox = function(rootElement, player) {
       });
     })(i);
   }
+  document.getElementById("add-button").addEventListener("click", function(e) {
+    toolbox.player.addActor("custom-actor", document.getElementById("add-input").value, "50%");
+  });
 };
 Toolbox.prototype = {};
+Toolbox.prototype.toolSelected = function() {
+  return !this.buttons[this.selected].classList.contains("button");
+};
 Toolbox.prototype.select = function(idx) {
+  if (this.toolSelected()) {
+    this.player.endRecording();
+  }
   this.buttons[this.selected].classList.remove("selected");
   this.selected = idx;
   this.buttons[this.selected].classList.add("selected");
@@ -589,7 +597,7 @@ Toolbox.prototype.keyframeValue = function(tool, actor, startX, startY, mouseX, 
   } else if (tool === "rotation") {
     return new Rotation(90-Math.atan2(- mouse.y + position.y, mouse.x - position.x) / Math.PI * 180);
   } else if (tool === "opacity") {
-    return new Opacity(Math.exp(-delta.y));
+    return new Opacity(-delta.y);
   }
 };
 
@@ -643,14 +651,16 @@ window.addEventListener("load", function() {
   document.addEventListener("mousedown", function(e) {
     var startX = mouseX;
     var startY = mouseY;
-    player.startRecording(toolbox.tool(), function() {
-      var offset = player.position();
-      var selected = player.selectedActor();
-      var value = toolbox.keyframeValue(toolbox.tool(), selected,
-        startX - camera.offsetLeft, startY - camera.offsetTop,
-        mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
-      player.recordKeyframe(new Keyframe(offset, value));
-    });
+    if (toolbox.toolSelected()) {
+      player.startRecording(toolbox.tool(), function() {
+        var offset = player.position();
+        var selected = player.selectedActor();
+        var value = toolbox.keyframeValue(toolbox.tool(), selected,
+          startX - camera.offsetLeft, startY - camera.offsetTop,
+          mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
+        player.recordKeyframe(new Keyframe(offset, value));
+      });
+    }
   });
 
   document.addEventListener("mousemove", function(e) {
