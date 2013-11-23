@@ -695,7 +695,7 @@ window.addEventListener("load", function() {
   progress.addEventListener("click", playPause);
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
-    if (keyCode ===  32) {
+    if (toolbox.toolSelected() && keyCode ===  32) { // Space
       playPause();
     }
   });
