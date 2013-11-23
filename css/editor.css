@@ -14,7 +14,7 @@ html, body, #editor, #scene {
 }
 #toolbox div {
   position: relative;
-  border: 1px solid black;
+  border: 3px solid black;
   border-radius: 100%;
   padding: 25px;
   margin: 5px;
@@ -23,6 +23,9 @@ html, body, #editor, #scene {
   align-items: center;
   background-color: red;
   z-index: 1;
+}
+#toolbox div .selected {
+  background-color: green;
 }
 #editor {
   padding: 10px;
