@@ -19,19 +19,31 @@ var Toolbox = function(rootElement, player) {
         e.stopPropagation();
         return false;
       });
-      document.addEventListener("keypress", function(e) {
-        var keyCode = e.keyCode || e.which;
-        if (toolbox.toolSelected() && keyCode === button.id.charCodeAt(0)) {
-          toolbox.select(idx);
-          e.stopPropagation();
-          return false;
-        }
-        return true;
-      });
+      if (!button.classList.contains("button")) {
+        document.addEventListener("keypress", function(e) {
+          var keyCode = e.keyCode || e.which;
+          if (toolbox.toolSelected() && keyCode === button.id.charCodeAt(0)) {
+            toolbox.select(idx);
+            e.stopPropagation();
+            return false;
+          }
+          return true;
+        });
+      }
     })(i);
   }
   document.getElementById("add-button").addEventListener("click", function(e) {
-    toolbox.player.addActor("custom-actor", document.getElementById("add-input").value, "50%");
+    var image = document.getElementById("add-input").value;
+    var match = /([^.\/]*)\.[^\/]*/.exec(image)
+    var id = "custom-actor";
+    if (match !== null) {
+      id = match[1]
+    }
+    toolbox.player.addActor(id, image, "50%");
+  });
+  document.getElementById("share-button").addEventListener("click", function(e) {
+    console.log(player.serialize());
+    document.getElementById("animation-data").value = player.serialize();
   });
 };
 Toolbox.prototype = {};

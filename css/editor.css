@@ -29,10 +29,10 @@
   display: flex;
   margin: auto;
 }
-#add.selected .button-content, #add .button-text {
+#toolbox .selected .button-content, #toolbox .button-text {
   display: inline;
 }
-#add .button-content, #add.selected .button-text {
+#toolbox .button-content, #toolbox .selected .button-text {
   display: none;
 }
 #editor {
