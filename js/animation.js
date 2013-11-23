@@ -421,7 +421,9 @@ Player.prototype.startRecording = function(type, callback) {
   this._withSelected(function(a) {
     a.startRecording(type);
   });
-  this.recordingTimer = window.setInterval(callback, 40);
+  if (this.selected !== this.actors.length) {
+    this.recordingTimer = window.setInterval(callback, 40);
+  }
 };
 Player.prototype.recordKeyframe = function(keyframe) {
   this._withSelected(function(a) {
