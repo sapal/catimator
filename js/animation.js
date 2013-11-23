@@ -293,7 +293,9 @@ Actor.prototype.playType = function(type) {
 };
 Actor.prototype.play = function() {
   for (var type in Keyframe.types) {
-    this.playType(type);
+    if (type !== this.recordedType) {
+      this.playType(type);
+    }
   }
 };
 Actor.prototype.startRecording = function(type) {
