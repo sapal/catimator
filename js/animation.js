@@ -184,7 +184,8 @@ Actor.prototype.createElements = function(camera) {
     el = document.createElement("div");
     el.classList.add(this.data.style);
     var p = document.createElement("p");
-    p.innerText = this.data.text;
+    //p.innerText = this.data.text;
+    p.textContent = this.data.text;
     el.appendChild(p);
     this.updateFontSize = function() {
       el.style.fontSize = (el.clientWidth / 10) + "px";

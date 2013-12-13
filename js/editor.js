@@ -32,14 +32,20 @@ var Toolbox = function(rootElement, player) {
       }
     })(i);
   }
-  document.getElementById("add-button").addEventListener("click", function(e) {
-    var image = document.getElementById("add-input").value;
+  document.getElementById("add-image-button").addEventListener("click", function(e) {
+    var image = document.getElementById("add-image-input").value;
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
-    var id = "custom-actor";
+    var id = "custom-actor-image";
     if (match !== null) {
       id = match[1]
     }
     toolbox.player.addActor(id, {"type": "image", "image": image}, "50%");
+  });
+  document.getElementById("add-text-button").addEventListener("click", function(e) {
+    var text = document.getElementById("add-text-input").value;
+    var id = text;
+    var style = document.getElementById("add-text-type").value;
+    toolbox.player.addActor(id, {"type": "text", "text": text, "style": style}, "40%");
   });
   document.getElementById("share-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();

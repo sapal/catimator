@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -20,9 +20,19 @@
         <div id="add" class="button">
           <span class="button-text">ADD</span>
           <span class="button-content">
-            <label for="add-input">Image:</label>
-            <input type="text" id="add-input">
-            <input type="button" id="add-button" value="Add image">
+            <label for="add-image-input">Image:</label>
+            <input type="text" id="add-image-input">
+            <input type="button" id="add-image-button" value="Add image">
+            
+            <br>
+            
+            <label for="add-text-input">Text:</label>
+            <input type="text" id="add-text-input" value="Hello!">
+            <select id="add-text-type">
+              <option value="thought-left">Thought left</option>
+              <option value="thought-right">Thought right</option>
+            </select>
+            <input type="button" id="add-text-button" value="Add text">
           </span>
         </div>
         <div id="share" class="button">

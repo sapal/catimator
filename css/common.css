@@ -83,6 +83,7 @@ html, body, #editor, #scene {
   color: #333;
   background: white;
   border-radius: 50%;
+  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 .thought-left .decoration, .thought-right .decoration {
