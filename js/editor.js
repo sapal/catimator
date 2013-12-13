@@ -39,7 +39,7 @@ var Toolbox = function(rootElement, player) {
     if (match !== null) {
       id = match[1]
     }
-    toolbox.player.addActor(id, image, "50%");
+    toolbox.player.addActor(id, {"type": "image", "image": image}, "50%");
   });
   document.getElementById("share-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();
