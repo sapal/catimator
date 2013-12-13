@@ -75,3 +75,39 @@ html, body, #editor, #scene {
 .animated-object img {
   display: block;
 }
+.animated-object .speech-left {
+  position: relative;
+  padding: 5% 5%;
+  border: 0.5em solid black;
+  text-align: center;
+  color: #333;
+  /*background: white;*/
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.animated-object .speech-left .decoration {
+  content: "";
+  position: absolute;
+  bottom: -20%;
+  left: 0%;
+  width: 1.5em;
+  height: 1.5em;
+  border-style: solid;
+  border-width: 0.5em;
+  border-color: black;
+  background: white;
+  border-radius: 100%; 
+}
+.animated-object .speech-left .decoration:after {
+  content: "";
+  position: absolute;
+  bottom: -75%;
+  left: -125%;
+  width: 0.5em;
+  height: 0.5em;
+  border-style: solid;
+  border-width: 0.5em;
+  border-color: black;
+  background: white;
+  border-radius: 100%; 
+}			

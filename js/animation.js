@@ -128,9 +128,9 @@ Keyframe.prototype.crop = function() {
   this.offset = Math.max(0.0, Math.min(1.0, this.offset));
 };
 
-var Actor = function(id, image, width, duration) {
+var Actor = function(id, data, width, duration) {
   this.id = id;
-  this.image = image;
+  this.data = data;
   this.width = width;
   this.duration = duration;
   this.recordedKeyframes = [];
@@ -149,7 +149,7 @@ Actor.prototype = {};
 Actor.prototype.serialize = function() {
   return JSON.stringify({
     "id" : this.id,
-    "image" : this.image,
+    "data" : this.data,
     "width" : this.width,
     "duration" : this.duration,
     "keyframes" : this.keyframes,
@@ -157,7 +157,7 @@ Actor.prototype.serialize = function() {
 };
 Actor.deserialize = function(string, camera) {
   var o = JSON.parse(string);
-  var a = new Actor(o.id, o.image, o.width, o.duration);
+  var a = new Actor(o.id, o.data, o.width, o.duration);
   a.createElements(camera);
   for (var type in o.keyframes) {
     var k = o.keyframes[type].map(function(k) { return Keyframe.fromObject(type, k); });
@@ -173,11 +173,27 @@ Actor.prototype.createElements = function(camera) {
   var r = document.createElement("div");
   var s = document.createElement("div");
   s.classList.add("scale");
-  var i = document.createElement("img");
   t.style.width = this.width;
-  i.style.width = "100%";
-  i.src = this.image;
-  i.alt = this.id;
+  var el = null; 
+  if (this.data.type === "image") {
+    el = document.createElement("img");
+    el.src = this.data.image;
+    el.alt = this.id;
+    this.updateFontSize = function() {};
+  } else {
+    el = document.createElement("div");
+    el.classList.add(this.data.style);
+    var p = document.createElement("p");
+    p.innerText = this.data.text;
+    el.appendChild(p);
+    this.updateFontSize = function() {
+      el.style.fontSize = (el.clientWidth / 10) + "px";
+    };
+    var d = document.createElement("div");
+    d.classList.add("decoration");
+    el.appendChild(d);
+  }
+  el.style.width = "100%";
   t.classList.add("animated-object");
   t.dgraggable = false;
   t.addEventListener("dragstart", function(e) {
@@ -186,16 +202,19 @@ Actor.prototype.createElements = function(camera) {
   });
   t.appendChild(r);
   r.appendChild(s);
-  s.appendChild(i);
+  s.appendChild(el);
   camera.appendChild(t);
   this.rootElement = t;
   this.elements["translation"] = t;
   this.elements["rotation"] = r;
   this.elements["scale"] = s;
-  this.elements["opacity"] = i;
+  this.elements["opacity"] = el;
+  this.updateFontSize();
+  window.addEventListener("resize", this.updateFontSize);
 };
 Actor.prototype.deleteElements = function() {
   this.rootElement.remove();
+  window.removeEventListener("resize", this.updateFontSize);
 };
 Actor.prototype.generateAnimationType = function(type) {
   var transforms = [];
@@ -385,8 +404,8 @@ Player.prototype = {};
 Player.prototype.playing = function() {
   return this.progressPlayer && this.progressPlayer.paused == false;
 };
-Player.prototype.addActor = function(id, image, width) {
-  var a = new Actor(id, image, width, this.duration);
+Player.prototype.addActor = function(id, data, width) {
+  var a = new Actor(id, data, width, this.duration);
   a.createElements(this.cameraElement);
   if (this.selected === this.actors.length) {
     this.selected++;
