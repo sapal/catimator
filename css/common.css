@@ -75,21 +75,19 @@ html, body, #editor, #scene {
 .animated-object img {
   display: block;
 }
-.animated-object .speech-left {
+.thought-left, .thought-right {
   position: relative;
   padding: 5% 5%;
   border: 0.5em solid black;
   text-align: center;
   color: #333;
-  /*background: white;*/
+  background: white;
   border-radius: 50%;
   box-sizing: border-box;
 }
-.animated-object .speech-left .decoration {
-  content: "";
+.thought-left .decoration, .thought-right .decoration {
+  content: "";	
   position: absolute;
-  bottom: -20%;
-  left: 0%;
   width: 1.5em;
   height: 1.5em;
   border-style: solid;
@@ -97,12 +95,17 @@ html, body, #editor, #scene {
   border-color: black;
   background: white;
   border-radius: 100%; 
+}	
+.thought-left .decoration {
+  right: 0%;
 }
-.animated-object .speech-left .decoration:after {
+.thought-right .decoration {
+  left: 0%;
+}
+.thought-left .decoration:after, .thought-right .decoration:after {
   content: "";
   position: absolute;
   bottom: -75%;
-  left: -125%;
   width: 0.5em;
   height: 0.5em;
   border-style: solid;
@@ -110,4 +113,10 @@ html, body, #editor, #scene {
   border-color: black;
   background: white;
   border-radius: 100%; 
-}			
+}	
+.thought-left .decoration:after {
+  right: -125%;
+}
+.thought-right .decoration:after {
+  right: 125%;
+}
