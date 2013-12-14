@@ -46,7 +46,7 @@ var Toolbox = function(rootElement, player) {
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
     var id = "custom-actor-image";
     if (match !== null) {
-      id = match[1]
+      id = match[1];
     }
     toolbox.player.addActor(id, {"type": "image", "image": image}, "50%");
   });
@@ -75,7 +75,7 @@ Toolbox.prototype.select = function(idx) {
 Toolbox.prototype.tool = function() {
   return this.buttons[this.selected].id;
 };
-Toolbox.prototype.keyframeValue = function(tool, actor, startX, startY, mouseX, mouseY) {
+Toolbox.prototype.keyframeValueMouse = function(tool, actor, startX, startY, mouseX, mouseY) {
   var start = actor.relativePosition(startX, startY);
   var mouse = actor.relativePosition(mouseX, mouseY);
   var delta = actor.relativePosition(mouseX - startX, mouseY - startY);
@@ -88,6 +88,11 @@ Toolbox.prototype.keyframeValue = function(tool, actor, startX, startY, mouseX, 
     return new Rotation(90-Math.atan2(- mouse.y + position.y, mouse.x - position.x) / Math.PI * 180);
   } else if (tool === "opacity") {
     return new Opacity(1-delta.y);
+  }
+};
+Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY) {
+  if (tool === "translation") {
+    return actor.relativePosition(touchX, touchY);
   }
 };
 
@@ -118,7 +123,7 @@ window.addEventListener("load", function() {
       player.startRecording(toolbox.tool(), function() {
         var offset = player.position();
         var selected = player.selectedActor();
-        var value = toolbox.keyframeValue(toolbox.tool(), selected,
+        var value = toolbox.keyframeValueMouse(toolbox.tool(), selected,
           startX - camera.offsetLeft, startY - camera.offsetTop,
           mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
         player.recordKeyframe(new Keyframe(offset, value));
@@ -186,6 +191,9 @@ window.addEventListener("load", function() {
   
   if ("ontouchstart" in window) {
     var splashscreen = document.getElementById("splashscreen");
+    var script = document.createElement("script");
+    script.src = "/js/lib/hammer.js";
+    splashscreen.appendChild(script);
     splashscreen.style.display = "block";
     splashscreen.addEventListener("click", function() {
       splashscreen.style.display = "none";
@@ -199,7 +207,49 @@ window.addEventListener("load", function() {
           break;
         }
       }
-    });  
+    });
+    script.addEventListener("load", function() {
+      var hammer = Hammer(editor, {
+        transform_always_block: true,
+        transform_min_scale: 1,
+        drag_block_horizontal: true,
+        drag_block_vertical: true,
+        drag_min_distance: 0
+      });
+      var touchX = 0, touchY = 0;
+      hammer.on("touch", function(e) {
+        console.log("TOUCH");
+        console.log(e);
+        if (toolbox.toolSelected()) {
+          player.startRecording(toolbox.tool(), function() {
+            if (!toolbox.toolSelected()) {
+              player.endRecording();
+              return;
+            }
+            console.log("KEYFRAME: "+touchX +", "+touchY + "  "+toolbox.tool());
+            var offset = player.position();
+            var selected = player.selectedActor();
+            var value = toolbox.keyframeValueTouch(toolbox.tool(), selected,
+              touchX - camera.offsetLeft, touchY - camera.offsetTop);
+            player.recordKeyframe(new Keyframe(offset, value));
+          });
+        }
+      });
+      hammer.on("drag", function(e) {
+        console.log("DRAG");
+        console.log(e);
+        var center = e.gesture.center;
+        touchX = center.pageX;
+        touchY = center.pageY;
+      });
+      hammer.on("release", function(e) {
+        console.log("RELEASE");
+        console.log(e);
+        if (player.recording()) {
+          player.endRecording();
+        }
+      });
+    });
   }
   player.deserialize(animation);
 });
