@@ -184,8 +184,13 @@ Actor.prototype.createElements = function(camera) {
     el = document.createElement("div");
     el.classList.add(this.data.style);
     var p = document.createElement("p");
-    //p.innerText = this.data.text;
-    p.textContent = this.data.text;
+    var lines = this.data.text.split("\n");
+    for (var i = 0; i < lines.length; ++i) {
+      if (i > 0) {
+        p.appendChild(document.createElement("br"));
+      }
+      p.appendChild(document.createTextNode(lines[i]));
+    }
     el.appendChild(p);
     this.updateFontSize = function() {
       el.style.fontSize = (el.clientWidth / 10) + "px";
