@@ -42,13 +42,13 @@ var Toolbox = function(rootElement, player) {
     player.playPause();
   });
   document.getElementById("add-image-button").addEventListener("click", function(e) {
-    var image = document.getElementById("add-image-input").value;
+    var images = document.getElementById("add-image-input").value;
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
     var id = "custom-actor-image";
     if (match !== null) {
       id = match[1];
     }
-    toolbox.player.addActor(id, {"type": "image", "image": image}, "50%");
+    toolbox.player.addActor(id, {"type": "image", "images": [image]}, "50%");
   });
   document.getElementById("add-text-button").addEventListener("click", function(e) {
     var text = document.getElementById("add-text-input").value;
@@ -75,6 +75,15 @@ Toolbox.prototype.select = function(idx) {
 Toolbox.prototype.tool = function() {
   return this.buttons[this.selected].id;
 };
+Toolbox.prototype._imageKeyframeValue = function(actor) {
+  var current = actor.getValue(this.player.position(), "image");
+  if (actor.data.type === "image") {
+    var i = (current.i + 1) % actor.data.images.length;
+    return new Image(i, actor.data.images[i]);
+  } else {
+    return new Image();
+  }
+};
 Toolbox.prototype.keyframeValueMouse = function(tool, actor, startX, startY, mouseX, mouseY) {
   var start = actor.relativePosition(startX, startY);
   var mouse = actor.relativePosition(mouseX, mouseY);
@@ -88,6 +97,8 @@ Toolbox.prototype.keyframeValueMouse = function(tool, actor, startX, startY, mou
     return new Rotation(90-Math.atan2(- mouse.y + position.y, mouse.x - position.x) / Math.PI * 180);
   } else if (tool === "opacity") {
     return new Opacity(1-delta.y);
+  } else if (tool === "image") {
+    return this._imageKeyframeValue(actor);
   }
 };
 Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY, rotation, scale, opacity) {
@@ -99,6 +110,8 @@ Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY, rot
     return new Rotation(rotation);
   } else if (tool === "opacity") {
     return new Opacity(opacity);
+  } else if (tool === "image") {
+    return this._imageKeyframeValue(actor);
   }
 };
 

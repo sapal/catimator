@@ -55,9 +55,9 @@ func jsonAnimation(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		animation.Data = []byte(`{"duration":10, "actors":[
-		"{\"id\":\"cat\",\"width\":\"30%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"image\":\"/images/cat/cat_left.png\"}}",
-		"{\"id\":\"mouse\",\"width\":\"20%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"image\":\"/images/mouse/mouse_left.png\"}}",
-		"{\"id\":\"fence\",\"width\":\"70%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"image\":\"/images/fence/fence.png\"}}",
+		"{\"id\":\"cat\",\"width\":\"30%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"images\":[\"/images/cat/cat_left.png\", \"/images/cat/cat_right.png\"]}}",
+		"{\"id\":\"mouse\",\"width\":\"20%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"images\":[\"/images/mouse/mouse_left.png\"]}}",
+		"{\"id\":\"fence\",\"width\":\"70%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"image\",\"images\":[\"/images/fence/fence.png\"]}}",
 		"{\"id\":\"text-right\",\"width\":\"30%\",\"duration\":10,\"keyframes\":[],\"data\":{\"type\":\"text\",\"text\":\"LOL\\nHAHA\",\"style\":\"thought-right\"}}"
 		]}`)
 	}

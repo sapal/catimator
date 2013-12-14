@@ -124,6 +124,37 @@ Opacity.prototype.interpolate = function(offset, startOffset, endOffset, startOp
   return new Opacity(interpolate(offset, startOffset, endOffset, startOpacity.o, endOpacity.o));
 };
 
+var Image = function(i, img) {
+  if (i === undefined) {
+    i = -1;
+    img = "";
+  }
+  this.i = i;
+  this.img = img;
+};
+Image.prototype = {};
+Image.fromObject = function(o) {
+  return new Image(o.i, o.img);
+};
+Image.prototype.getProperty = function() {
+  if (this.i !== -1) {
+    return {
+      "name" : "background-image",
+      "value" : "url(" + this.img + ")",
+      "prefixed" : false,
+    };
+  } else {
+    return {
+      "name" : "not_applicable",
+      "value" : "not_applicable",
+      "prefixed" : false,
+    }
+  }
+};
+Image.prototype.interpolate = function(offset, startOffset, endOffset, startImage, endImage) {
+  return startImage;
+};
+
 var Keyframe = function(offset, value) {
   this.offset = offset;
   this.value = value;
@@ -134,6 +165,7 @@ Keyframe.types = {
   "rotation" : Rotation,
   "scale" : Scale,
   "opacity" : Opacity,
+  "image" : Image,
 };
 Keyframe.fromObject = function(type, o) {
   return new Keyframe(o.offset, Keyframe.types[type].fromObject(o.value));
@@ -203,14 +235,17 @@ Actor.prototype.createElements = function(camera) {
   var s = document.createElement("div");
   s.classList.add("scale");
   t.style.width = this.width;
-  var el = null; 
+  var el = document.createElement("div");
   if (this.data.type === "image") {
-    el = document.createElement("img");
-    el.src = this.data.image;
-    el.alt = this.id;
+    var i = document.createElement("img");
+    i.src = this.data.images[0];
+    i.alt = this.id;
+    el.style.backgroundImage = "url(" + this.data.images[0] + ")";
+    el.style.backgroundSize = "100%";
+    el.appendChild(i);
     this.updateFontSize = function() {};
+    this.keyframes["image"].push(new Keyframe(0, new Image(0, this.data.images[0])));
   } else {
-    el = document.createElement("div");
     el.classList.add(this.data.style);
     var p = document.createElement("p");
     var lines = this.data.text.split("\n");
@@ -244,6 +279,7 @@ Actor.prototype.createElements = function(camera) {
   this.elements["rotation"] = r;
   this.elements["scale"] = s;
   this.elements["opacity"] = el;
+  this.elements["image"] = el;
   this.updateFontSize();
   window.addEventListener("resize", this.updateFontSize);
 };
@@ -379,6 +415,9 @@ Actor.prototype.rewindType = function(type) {
   }
 };
 Actor.prototype.setProperty = function(type, property) {
+  if (type === "not_applicable") {
+    return;
+  }
   var prefixedName = function(name, prefix) {
     if (prefix === "") {
       return name;
