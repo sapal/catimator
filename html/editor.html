@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Catimator editor</title>
     <link rel="stylesheet" href="../css/common.css">
@@ -14,7 +15,26 @@
   </head>
   <body>
     <div id="editor">
+      <div id="splashscreen"><div>Start</div></div>
       <div id="toolbox">
+        <div id="selection">
+          <span class="button-text">Select</span>
+          <span class="button-content">
+            <input type="button" id="select-button" value="Select">
+          </span>
+        </div>
+        <div id="selection" class="button">
+          <span class="button-text">Delete</span>
+          <span class="button-content">
+            <input type="button" id="delete-button" value="Delete">
+          </span>
+        </div>
+        <div id="selection" class="button">
+          <span class="button-text">Playback</span>
+          <span class="button-content">
+            <input type="button" id="play-button" value="Play/pause">
+          </span>
+        </div>
         <div id="translation">TR</div>
         <div id="rotation">RT</div>
         <div id="scale">SC</div>

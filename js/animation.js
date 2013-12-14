@@ -570,3 +570,16 @@ Player.prototype.deserialize = function(string) {
 Player.prototype.selectedActor = function() {
   return this.actors[this.selected];
 };
+Player.prototype.playPause = function() {
+  if (this.paused()) {
+    this.unpause();
+  } else {
+    if (this.position() === 0) {
+      this.play();
+    } else if (this.position() === 1) {
+      this.stop();
+    } else {
+      this.pause();
+    }
+  }
+};

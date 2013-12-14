@@ -1,15 +1,33 @@
+#splashscreen {
+  position: absolute;
+  left: 5vw;
+  top: 5vh;
+  width: 90vw;
+  height: 90vh;
+  background: blue;
+  z-index: 2;
+  text-align: center;
+  font-size: 20vmin;
+  border-radius: 10vw;
+  cursor: pointer;
+  display: none;
+}
+#splashscreen div {
+  position: absolute;
+  top: 30vh;
+  width: 90vw;
+}
 #toolbox {
   float: left;
   position: absolute;
-  left: 10px;
-  right: 10px;
+  left: 1vmin;
+  right: 1vmin;
 }
 #toolbox div {
   position: relative;
   border: 3px solid black;
   border-radius: 100%;
-  padding: 25px;
-  margin: 5px;
+  padding: 2vmin;
   display: inline-block;
   justify-content: center;
   align-items: center;
@@ -24,8 +42,8 @@
   justify-content: center;
 }
 #add.selected {
-  width: 300px;
-  height: 300px;
+  width: 50vmin;
+  height: 50vmin;
   display: flex;
   margin: auto;
 }
@@ -36,7 +54,7 @@
   display: none;
 }
 #editor {
-  padding: 10px;  
+  padding: 1vmin;  
 }
 .selected .scale {
   background-color: rgba(0,255,0,.4);

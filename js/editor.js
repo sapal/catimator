@@ -32,6 +32,15 @@ var Toolbox = function(rootElement, player) {
       }
     })(i);
   }
+  document.getElementById("select-button").addEventListener("click", function(e) {
+    player.selectNextActor();
+  });
+  document.getElementById("delete-button").addEventListener("click", function(e) {
+    player.removeSelectedActor();
+  });
+  document.getElementById("play-button").addEventListener("click", function() {
+    player.playPause();
+  });
   document.getElementById("add-image-button").addEventListener("click", function(e) {
     var image = document.getElementById("add-image-input").value;
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
@@ -128,29 +137,17 @@ window.addEventListener("load", function() {
     }
   });
 
-  var playPause = function() {
-    if (player.paused()) {
-      player.unpause();
-    } else {
-      if (player.position() === 0) {
-        player.play();
-      } else if (player.position() === 1) {
-        player.stop();
-      } else {
-        player.pause();
-      }
-    }
-  };
-
   progress.addEventListener("mousedown", function(e) {
     e.stopPropagation();
     return false;
   });
-  progress.addEventListener("click", playPause);
+  progress.addEventListener("click", function() {
+    player.playPause();
+  });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
     if (toolbox.toolSelected() && keyCode ===  32) { // Space
-      playPause();
+      player.playPause();
     }
   });
   document.addEventListener("keydown", function(e) {
@@ -186,7 +183,24 @@ window.addEventListener("load", function() {
     e.stopPropagation();
     e.preventDefault();
   });
-
+  
+  if ("ontouchstart" in window) {
+    var splashscreen = document.getElementById("splashscreen");
+    splashscreen.style.display = "block";
+    splashscreen.addEventListener("click", function() {
+      splashscreen.style.display = "none";
+      var prefix = ["moz", "webkit", ""];
+      for (var i = 0; i < prefix.length; ++i) {
+        var name = prefix[i] + "RequestFullScreen";
+        name = name.charAt(0).toLowerCase() + name.slice(1);
+        console.log(name);
+        if (name in document.body) {
+          document.body[name]();
+          break;
+        }
+      }
+    });  
+  }
   player.deserialize(animation);
 });
 
