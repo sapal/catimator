@@ -26,7 +26,7 @@
 #toolbox div {
   position: relative;
   border: 3px solid black;
-  border-radius: 100%;
+  border-radius: 2vmin;
   padding: 2vmin;
   display: inline-block;
   justify-content: center;
