@@ -90,9 +90,11 @@ Toolbox.prototype.keyframeValueMouse = function(tool, actor, startX, startY, mou
     return new Opacity(1-delta.y);
   }
 };
-Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY) {
+Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY, rotation) {
   if (tool === "translation") {
     return actor.relativePosition(touchX, touchY);
+  } else if (tool === "rotation") {
+    return new Rotation(rotation);
   }
 };
 
@@ -119,7 +121,7 @@ window.addEventListener("load", function() {
   document.addEventListener("mousedown", function(e) {
     var startX = mouseX;
     var startY = mouseY;
-    if (toolbox.toolSelected()) {
+    if (toolbox.toolSelected() && !player.recording()) {
       player.startRecording(toolbox.tool(), function() {
         var offset = player.position();
         var selected = player.selectedActor();
@@ -201,7 +203,6 @@ window.addEventListener("load", function() {
       for (var i = 0; i < prefix.length; ++i) {
         var name = prefix[i] + "RequestFullScreen";
         name = name.charAt(0).toLowerCase() + name.slice(1);
-        console.log(name);
         if (name in document.body) {
           document.body[name]();
           break;
@@ -217,34 +218,38 @@ window.addEventListener("load", function() {
         drag_min_distance: 0
       });
       var touchX = 0, touchY = 0;
+      var startRotation = 0;
+      var rotation = 0;
       hammer.on("touch", function(e) {
-        console.log("TOUCH");
-        console.log(e);
-        if (toolbox.toolSelected()) {
+        if (toolbox.toolSelected() && player.selectedActor()) {
+          rotation = 0;
+          startRotation = player.selectedActor().getValue(player.position(), "rotation").r;
           player.startRecording(toolbox.tool(), function() {
             if (!toolbox.toolSelected()) {
               player.endRecording();
               return;
             }
-            console.log("KEYFRAME: "+touchX +", "+touchY + "  "+toolbox.tool());
             var offset = player.position();
             var selected = player.selectedActor();
             var value = toolbox.keyframeValueTouch(toolbox.tool(), selected,
-              touchX - camera.offsetLeft, touchY - camera.offsetTop);
+              touchX - camera.offsetLeft, touchY - camera.offsetTop,
+              startRotation + rotation);
             player.recordKeyframe(new Keyframe(offset, value));
           });
         }
       });
+      hammer.on("hold", function(e) {
+        e.preventDefault();
+      });
       hammer.on("drag", function(e) {
-        console.log("DRAG");
-        console.log(e);
         var center = e.gesture.center;
         touchX = center.pageX;
         touchY = center.pageY;
       });
+      hammer.on("transform", function(e) {
+        rotation = e.gesture.rotation;
+      });
       hammer.on("release", function(e) {
-        console.log("RELEASE");
-        console.log(e);
         if (player.recording()) {
           player.endRecording();
         }

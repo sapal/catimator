@@ -27,6 +27,15 @@ var stableSort = function(a, cmp) {
   });
 };
 
+var interpolate = function(offset, startOffset, endOffset, startValue, endValue) {
+  var length = (endOffset - startOffset);
+  if (length === 0) {
+    return startValue;
+  }
+  var f = (offset - startOffset) / length;
+  return (1 - f) * startValue + f * endValue;
+};
+
 var Position = function(x, y) {
   if (x === undefined && y === undefined) {
     x = 0.5;
@@ -46,6 +55,11 @@ Position.prototype.getProperty = function() {
     "prefixed" : "true",
   };
 };
+Position.prototype.interpolate = function(offset, startOffset, endOffset, startPosition, endPosition) {
+  return new Position(
+    interpolate(offset, startOffset, endOffset, startPosition.x, endPosition.x),
+    interpolate(offset, startOffset, endOffset, startPosition.y, endPosition.y));
+};
 
 var Rotation = function(r) {
   if (r === undefined) {
@@ -63,6 +77,9 @@ Rotation.prototype.getProperty = function() {
     "value" : "rotate(" + this.r + "deg)",
     "prefixed" : true,
   };
+};
+Rotation.prototype.interpolate = function(offset, startOffset, endOffset, startRotation, endRotation) {
+  return new Rotation(interpolate(offset, startOffset, endOffset, startRotation.r, endRotation.r));
 };
 
 var Scale = function(s) {
@@ -82,6 +99,9 @@ Scale.prototype.getProperty = function() {
     "prefixed" : true,
   };
 };
+Scale.prototype.interpolate = function(offset, startOffset, endOffset, startScale, endScale) {
+  return new Scale(interpolate(offset, startOffset, endOffset, startScale.s, endScale.s));
+};
 
 var Opacity = function(o) {
   if (o === undefined) {
@@ -99,6 +119,9 @@ Opacity.prototype.getProperty = function() {
     "value" : this.o,
     "prefixed" : false,
   };
+};
+Opacity.prototype.interpolate = function(offset, startOffset, endOffset, startOpacity, endOpacity) {
+  return new Opacity(interpolate(offset, startOffset, endOffset, startOpacity.o, endOpacity.o));
 };
 
 var Keyframe = function(offset, value) {
@@ -126,6 +149,12 @@ Keyframe.prototype.copy = function(offset) {
 };
 Keyframe.prototype.crop = function() {
   this.offset = Math.max(0.0, Math.min(1.0, this.offset));
+};
+Keyframe.interpolate = function(offset, startKeyframe, endKeyframe) {
+  return new Keyframe(offset, 
+    startKeyframe.value.interpolate(
+      offset, startKeyframe.offset, endKeyframe.offset,
+      startKeyframe.value, endKeyframe.value));
 };
 
 var Actor = function(id, data, width, duration) {
@@ -281,6 +310,25 @@ Actor.prototype.saveRecordedKeyframes = function() {
   });
   this.keyframes[this.recordedType] = result.concat(this.recordedKeyframes);
   this.generateAnimationType(this.recordedType);
+};
+Actor.prototype.getValue = function(offset, type) {
+  if (this.keyframes[type].length === 0) {
+    return new Keyframe.types[type]();
+  }
+  var prevIdx = 0;
+  for (;prevIdx < this.keyframes[type].length; ++prevIdx) {
+    if (this.keyframes[type][prevIdx] <= offset) {
+      ++prevIdx;
+      break;
+    }
+  }
+  --prevIdx;
+  var nextIdx = prevIdx;
+  if (prevIdx < this.keyframes[type].length - 1) {
+    ++nextIdx;
+  }
+  return Keyframe.interpolate(
+    offset, this.keyframes[type][prevIdx], this.keyframes[type][nextIdx]).value;
 };
 Actor.prototype.pause = function() {
   for (var type in Keyframe.types) {
