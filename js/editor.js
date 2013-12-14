@@ -229,9 +229,9 @@ window.addEventListener("load", function() {
           rotation = 0;
           startRotation = player.selectedActor().getValue(player.position(), "rotation").r;
           scale = 1;
-          startScale = Math.max(0.1, player.selectedActor().getValue(player.position(), "scale").s);
+          startScale = Math.max(0.01, player.selectedActor().getValue(player.position(), "scale").s);
           opacity = 1;
-          startOpacity = Math.max(0.1, player.selectedActor().getValue(player.position(), "opacity").o);
+          startOpacity = Math.max(0.01, player.selectedActor().getValue(player.position(), "opacity").o);
           player.startRecording(toolbox.tool(), function() {
             if (!toolbox.toolSelected()) {
               player.endRecording();
@@ -257,7 +257,7 @@ window.addEventListener("load", function() {
       hammer.on("transform", function(e) {
         rotation = e.gesture.rotation;
         scale = e.gesture.scale;
-        opacity = e.gesture.scale;
+        opacity = e.gesture.scale * e.gesture.scale;
       });
       hammer.on("release", function(e) {
         if (player.recording()) {

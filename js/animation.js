@@ -315,17 +315,15 @@ Actor.prototype.getValue = function(offset, type) {
   if (this.keyframes[type].length === 0) {
     return new Keyframe.types[type]();
   }
-  var prevIdx = 0;
-  for (;prevIdx < this.keyframes[type].length; ++prevIdx) {
-    if (this.keyframes[type][prevIdx] <= offset) {
-      ++prevIdx;
+  var nextIdx = 0;
+  for (;nextIdx < this.keyframes[type].length; ++nextIdx) {
+    if (this.keyframes[type][nextIdx].offset <= offset) {
       break;
     }
   }
-  --prevIdx;
-  var nextIdx = prevIdx;
-  if (prevIdx < this.keyframes[type].length - 1) {
-    ++nextIdx;
+  var prevIdx = Math.max(0, nextIdx - 1);
+  if (nextIdx === this.keyframes[type].length) {
+    --nextIdx;
   }
   return Keyframe.interpolate(
     offset, this.keyframes[type][prevIdx], this.keyframes[type][nextIdx]).value;
