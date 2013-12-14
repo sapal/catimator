@@ -90,9 +90,11 @@ Toolbox.prototype.keyframeValueMouse = function(tool, actor, startX, startY, mou
     return new Opacity(1-delta.y);
   }
 };
-Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY, rotation) {
+Toolbox.prototype.keyframeValueTouch = function(tool, actor, touchX, touchY, rotation, scale) {
   if (tool === "translation") {
     return actor.relativePosition(touchX, touchY);
+  } else if (tool === "scale") {
+    return new Scale(scale);
   } else if (tool === "rotation") {
     return new Rotation(rotation);
   }
@@ -218,12 +220,14 @@ window.addEventListener("load", function() {
         drag_min_distance: 0
       });
       var touchX = 0, touchY = 0;
-      var startRotation = 0;
-      var rotation = 0;
+      var startRotation = 0, startScale = 1;
+      var rotation = 0, scale = 1;
       hammer.on("touch", function(e) {
         if (toolbox.toolSelected() && player.selectedActor()) {
           rotation = 0;
           startRotation = player.selectedActor().getValue(player.position(), "rotation").r;
+          scale = 1;
+          startScale = Math.max(0.1, player.selectedActor().getValue(player.position(), "scale").s);
           player.startRecording(toolbox.tool(), function() {
             if (!toolbox.toolSelected()) {
               player.endRecording();
@@ -233,7 +237,7 @@ window.addEventListener("load", function() {
             var selected = player.selectedActor();
             var value = toolbox.keyframeValueTouch(toolbox.tool(), selected,
               touchX - camera.offsetLeft, touchY - camera.offsetTop,
-              startRotation + rotation);
+              startRotation + rotation, startScale * scale);
             player.recordKeyframe(new Keyframe(offset, value));
           });
         }
@@ -248,6 +252,7 @@ window.addEventListener("load", function() {
       });
       hammer.on("transform", function(e) {
         rotation = e.gesture.rotation;
+        scale = e.gesture.scale;
       });
       hammer.on("release", function(e) {
         if (player.recording()) {
