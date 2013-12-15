@@ -132,15 +132,17 @@ var Image = function(i, img) {
   this.i = i;
   this.img = img;
 };
+Image.a = document.createElement("a");
 Image.prototype = {};
 Image.fromObject = function(o) {
   return new Image(o.i, o.img);
 };
 Image.prototype.getProperty = function() {
   if (this.i !== -1) {
+    Image.a.href = this.img;
     return {
-      "name" : "background-image",
-      "value" : "url(" + this.img + ")",
+      "name" : "content",
+      "value" : "url(" + Image.a.href + ")",
       "prefixed" : false,
     };
   } else {
@@ -189,6 +191,63 @@ Keyframe.interpolate = function(offset, startKeyframe, endKeyframe) {
       startKeyframe.value, endKeyframe.value));
 };
 
+var setProperty = function(element, property) {
+  if (property.name === "not_applicable") {
+    return;
+  }
+  var prefixedName = function(name, prefix) {
+    if (prefix === "") {
+      return name;
+    } else {
+      return prefix + name.charAt(0).toUpperCase() + name.slice(1); 
+    }
+  };
+  var prefixes = [""];
+  if (property.prefixed) {
+    prefixes.push("webkit");
+  }
+  for (var i = 0; i < prefixes.length; ++i) {
+    var name = prefixedName(property.name, prefixes[i]);
+    if (element.style[name] != property.value) {
+      if (element.style._clearAnimatedProperty) {
+        element.style._clearAnimatedProperty(name);
+      }
+      element.style[name] = property.value;
+    }
+  }
+};
+
+var StepTransformer = function(steps) {
+  this.steps = steps;
+  this.i = 0;
+};
+StepTransformer.prottype = {};
+StepTransformer.prototype.sample = function(offset, iteration, target) {
+  if (this.i === this.steps.length) {
+    return;
+  }
+  while (this.i < this.steps.length - 1 && this.steps[this.i + 1].offset <= offset) {
+    ++this.i;
+  }
+  while (this.i > 0 && this.steps[this.i].offset > offset) {
+    --this.i;
+  }
+  setProperty(target, this.steps[this.i].value.getProperty());
+};
+var KeyframeTransformer = function(steps) {
+  var transforms = [];
+  for (var i = 0; i < steps.length; ++i) {
+    var keyframe = steps[i];
+    var prop = keyframe.value.getProperty();
+    var transform = {
+      offset: keyframe.offset,
+    };
+    transform[prop.name] = prop.value;
+    transforms.push(transform);
+  }
+  return transforms;
+}
+
 var Actor = function(id, data, width, duration) {
   this.id = id;
   this.data = data;
@@ -235,17 +294,15 @@ Actor.prototype.createElements = function(camera) {
   var s = document.createElement("div");
   s.classList.add("scale");
   t.style.width = this.width;
-  var el = document.createElement("div");
+  var el = null;
   if (this.data.type === "image") {
-    var i = document.createElement("img");
-    i.src = this.data.images[0];
-    i.alt = this.id;
-    el.style.backgroundImage = "url(" + this.data.images[0] + ")";
-    el.style.backgroundSize = "100%";
-    el.appendChild(i);
+    el = document.createElement("img");
+    el.src = this.data.images[0];
+    el.alt = this.id;
     this.updateFontSize = function() {};
     this.keyframes["image"].push(new Keyframe(0, new Image(0, this.data.images[0])));
   } else {
+    el = document.createElement("div");
     el.classList.add(this.data.style);
     var p = document.createElement("p");
     var lines = this.data.text.split("\n");
@@ -314,16 +371,9 @@ Actor.prototype.generateAnimationType = function(type) {
   if (last.offset !== 1.0) {
     croppedKeyframes.push(last.copy(1.0));
   }
-  for (var i = 0; i < croppedKeyframes.length; ++i) {
-    var keyframe = croppedKeyframes[i];
-    var prop = keyframe.value.getProperty();
-    var transform = {
-      offset: keyframe.offset,
-    };
-    transform[prop.name] = prop.value;
-    transforms.push(transform);
-  }
-  this.animations[type] = new Animation(this.elements[type], transforms, {duration: this.duration});
+  var steps = croppedKeyframes;
+  var transformer = (type === "image") ? new StepTransformer(steps) : KeyframeTransformer(steps);
+  this.animations[type] = new Animation(this.elements[type], transformer, {duration: this.duration});
 };
 Actor.prototype.generateAnimation = function() {
   for (var type in Keyframe.types) {
@@ -353,7 +403,7 @@ Actor.prototype.getValue = function(offset, type) {
   }
   var nextIdx = 0;
   for (;nextIdx < this.keyframes[type].length; ++nextIdx) {
-    if (this.keyframes[type][nextIdx].offset <= offset) {
+    if (this.keyframes[type][nextIdx].offset > offset) {
       break;
     }
   }
@@ -415,28 +465,7 @@ Actor.prototype.rewindType = function(type) {
   }
 };
 Actor.prototype.setProperty = function(type, property) {
-  if (type === "not_applicable") {
-    return;
-  }
-  var prefixedName = function(name, prefix) {
-    if (prefix === "") {
-      return name;
-    } else {
-      return prefix + name.charAt(0).toUpperCase() + name.slice(1); 
-    }
-  };
-  var prefixes = [""];
-  if (property.prefixed) {
-    prefixes.push("webkit");
-  }
-  for (var i = 0; i < prefixes.length; ++i) {
-    var name = prefixedName(property.name, prefixes[i]);
-    var element = this.elements[type];
-    if (element.style._clearAnimatedProperty) {
-      element.style._clearAnimatedProperty(name);
-    }
-    element.style[name] = property.value;
-  }
+  setProperty(this.elements[type], property);
 };
 Actor.prototype.recordKeyframe = function(keyframe) {
   this.recordedKeyframes.push(keyframe);

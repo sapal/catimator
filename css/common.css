@@ -74,7 +74,6 @@ html, body, #editor, #scene {
 }
 .animated-object img {
   display: block;
-  opacity: 0;
   width: 100%;
 }
 .thought-left, .thought-right {
