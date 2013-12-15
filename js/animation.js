@@ -141,7 +141,7 @@ Image.prototype.getProperty = function() {
   if (this.i !== -1) {
     Image.a.href = this.img;
     return {
-      "name" : "content",
+      "name" : "background-image",
       "value" : "url(" + Image.a.href + ")",
       "prefixed" : false,
     };
@@ -202,12 +202,15 @@ var setProperty = function(element, property) {
       return prefix + name.charAt(0).toUpperCase() + name.slice(1); 
     }
   };
+  var camelCase = function(name) {
+    return name.replace(/-([a-z])/g, function(str, letter) {return letter.toUpperCase();});
+  };
   var prefixes = [""];
   if (property.prefixed) {
     prefixes.push("webkit");
   }
   for (var i = 0; i < prefixes.length; ++i) {
-    var name = prefixedName(property.name, prefixes[i]);
+    var name = prefixedName(camelCase(property.name), prefixes[i]);
     if (element.style[name] != property.value) {
       if (element.style._clearAnimatedProperty) {
         element.style._clearAnimatedProperty(name);
@@ -294,15 +297,18 @@ Actor.prototype.createElements = function(camera) {
   var s = document.createElement("div");
   s.classList.add("scale");
   t.style.width = this.width;
-  var el = null;
+  var el = document.createElement("div");
   if (this.data.type === "image") {
-    el = document.createElement("img");
-    el.src = this.data.images[0];
-    el.alt = this.id;
+    var i = document.createElement("img");
+    i.src = this.data.images[0];
+    i.alt = this.id;
+    el.appendChild(i);
     this.updateFontSize = function() {};
-    this.keyframes["image"].push(new Keyframe(0, new Image(0, this.data.images[0])));
+    var value = new Image(0, this.data.images[0]);
+    setProperty(el, value.getProperty());
+    el.classList.add("image");
+    this.keyframes["image"].push(new Keyframe(0, value));
   } else {
-    el = document.createElement("div");
     el.classList.add(this.data.style);
     var p = document.createElement("p");
     var lines = this.data.text.split("\n");
