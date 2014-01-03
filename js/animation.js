@@ -1,5 +1,4 @@
 "use strict";
-
 var saveToFile = function(data, filename) {
   var link = document.createElement("a");
   link.href = window.URL.createObjectURL(new Blob([data], {type:'text/plain'}));
@@ -25,6 +24,10 @@ var stableSort = function(a, cmp) {
   return b.map(function(el) {
     return el.el;
   });
+};
+
+var equal = function(a, b) {
+  return a === b;
 };
 
 var interpolate = function(offset, startOffset, endOffset, startValue, endValue) {
@@ -53,6 +56,7 @@ Position.prototype.getProperty = function() {
     "name" : "transform",
     "value" : "translate(" + ((this.x - 0.5) * 100) + "%, " + ((this.y - 0.5) * 100) + "%)",
     "prefixed" : "true",
+    "same" : equal,
   };
 };
 Position.prototype.interpolate = function(offset, startOffset, endOffset, startPosition, endPosition) {
@@ -76,6 +80,7 @@ Rotation.prototype.getProperty = function() {
     "name" : "transform",
     "value" : "rotate(" + this.r + "deg)",
     "prefixed" : true,
+    "same" : equal,
   };
 };
 Rotation.prototype.interpolate = function(offset, startOffset, endOffset, startRotation, endRotation) {
@@ -97,6 +102,7 @@ Scale.prototype.getProperty = function() {
     "name" : "transform",
     "value" : "scale(" + this.s + ")",
     "prefixed" : true,
+    "same" : equal,
   };
 };
 Scale.prototype.interpolate = function(offset, startOffset, endOffset, startScale, endScale) {
@@ -118,6 +124,7 @@ Opacity.prototype.getProperty = function() {
     "name" : "opacity",
     "value" : this.o,
     "prefixed" : false,
+    "same" : equal,
   };
 };
 Opacity.prototype.interpolate = function(offset, startOffset, endOffset, startOpacity, endOpacity) {
@@ -144,15 +151,25 @@ Image.prototype.getProperty = function() {
       "name" : "background-image",
       "value" : "url(" + Image.a.href + ")",
       "prefixed" : false,
+      "same" : Image.sameUrl,
     };
   } else {
     return {
       "name" : "not_applicable",
       "value" : "not_applicable",
       "prefixed" : false,
+      "same" : "not_applicable",
     }
   }
 };
+Image.sameUrl = function(oldValue, newValue) {
+  var urlRE = /^url\("?([^"]*)"?\)/;
+  var oldMatches = oldValue.match(urlRE);
+  var newMatches = newValue.match(urlRE);
+  return oldMatches && newMatches && 
+    oldMatches.length === 2 && newMatches.length === 2 && 
+    oldMatches[1] === newMatches[1];
+}
 Image.prototype.interpolate = function(offset, startOffset, endOffset, startImage, endImage) {
   return startImage;
 };
@@ -211,11 +228,14 @@ var setProperty = function(element, property) {
   }
   for (var i = 0; i < prefixes.length; ++i) {
     var name = prefixedName(camelCase(property.name), prefixes[i]);
-    if (element.style[name] != property.value) {
+    if (!property.same(element.style[name], property.value)) {
       if (element.style._clearAnimatedProperty) {
         element.style._clearAnimatedProperty(name);
       }
+      console.log("set " + name + " to " + property.value + " (was " + element.style[name] + ")");
       element.style[name] = property.value;
+    } else {
+      break;
     }
   }
 };
