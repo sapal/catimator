@@ -232,7 +232,6 @@ var setProperty = function(element, property) {
       if (element.style._clearAnimatedProperty) {
         element.style._clearAnimatedProperty(name);
       }
-      console.log("set " + name + " to " + property.value + " (was " + element.style[name] + ")");
       element.style[name] = property.value;
     } else {
       break;
