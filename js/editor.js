@@ -165,8 +165,8 @@ window.addEventListener("load", function() {
     e.stopPropagation();
     return false;
   });
-  progress.addEventListener("click", function() {
-    player.playPause();
+  progress.addEventListener("click", function(e) {
+    player.seek(e.offsetX / progress.clientWidth * player.duration);
   });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 

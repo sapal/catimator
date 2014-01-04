@@ -505,16 +505,22 @@ Actor.prototype.endRecording = function(offset, play) {
     return;
   }
   this.saveRecordedKeyframes();
-  if (play) {
-    this.playType(this.recordedType);
-    this.seekType(this.recordedType, offset);
+  this.playType(this.recordedType);
+  this.seekType(this.recordedType, offset);
+  if (!play) {
+    this.pause();
   }
   this.recordedType = null;
   this.recordedKeyframes = [];
 };
 Actor.prototype.seekType = function(type, offset) {
   if (this.players[type]) {
-    this.players[type].currentTime += offset * this.duration;
+    this.players[type].currentTime = offset * this.duration;
+  }
+};
+Actor.prototype.seek = function(offset) {
+  for (var type in Keyframe.types) {
+    this.seekType(type, offset);
   }
 };
 Actor.prototype.select = function(selected) {
@@ -646,6 +652,7 @@ Player.prototype.stop = function() {
   for (var i = 0; i < this.actors.length; ++i) {
     this.actors[i].stop();
   }
+  this.seek(0); 
 };
 Player.prototype.pause = function() {
   if (this.progressPlayer && !this.paused()) {
@@ -666,11 +673,24 @@ Player.prototype.unpause = function() {
 Player.prototype.paused = function() {
   return (this.progressPlayer && this.progressPlayer.paused === true);
 };
-Player.prototype.position = function() {
-  if (!this.progressPlayer) {
-    return 0.0;
+Player.prototype.position = function(time) {
+  if (time === undefined) {  
+    if (!this.progressPlayer) {
+      time = 0.0;
+    } else {
+      time = this.progressPlayer.currentTime;
+    }
   }
-  return Math.min(1.0, this.progressPlayer.currentTime / this.duration);
+  return Math.max(0.0, Math.min(1.0, time / this.duration));
+};
+Player.prototype.seek = function(time) {
+  var position = this.position(time);
+  this.play();
+  this.pause();
+  this.progressPlayer.currentTime = position * this.duration;
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].seek(position);
+  }
 };
 Player.prototype.recording = function() {
   return this._withSelected(function(a) {
