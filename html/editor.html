@@ -32,7 +32,13 @@
         <div id="playback" class="button">
           <span class="button-text">Playback</span>
           <span class="button-content">
-            <input type="button" id="play-button" value="Play/pause">
+            <input type="button" id="play-button" value="Play/pause"><br>
+            <label for="play-speed">Speed:</label><br>
+            <span>
+              -3
+              <input type="range" id="play-speed" min="-3" max="3" step="0.1" value="1">
+              3
+            </span>
           </span>
         </div>
         <div id="translation">TR</div>

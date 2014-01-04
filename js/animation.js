@@ -286,6 +286,7 @@ var Actor = function(id, data, width, duration) {
   for (var type in Keyframe.types) {
     this.keyframes[type] = [];
   }
+  this.setSpeed(1);
 };
 Actor.prototype = {};
 Actor.prototype.serialize = function() {
@@ -471,6 +472,7 @@ Actor.prototype.stop = function() {
 Actor.prototype.playType = function(type) {
   if (this.animations[type]) {
     this.players[type] = document.timeline.play(this.animations[type]);
+    this.players[type].playbackRate = this.speed;
   }
 };
 Actor.prototype.play = function() {
@@ -541,6 +543,14 @@ Actor.prototype.position = function(camera) {
       (r.left + r.right)/2 - this.cameraElement.offsetLeft,
       (r.top + r.bottom)/2 - this.cameraElement.offsetTop);
 };
+Actor.prototype.setSpeed = function(speed) {
+  this.speed = speed;
+  for (var type in Keyframe.types) {
+    if (this.players[type]) {
+      this.players[type].playbackRate = speed;
+    }
+  }
+};
 
 var Player = function(cameraElement, progressElement, duration) {
   this.actors = [];
@@ -550,6 +560,7 @@ var Player = function(cameraElement, progressElement, duration) {
   this.duration = duration;
   this.progressPlayer = null;
   this.recordingTimer = null;
+  this.setSpeed(1);
 };
 Player.prototype = {};
 Player.prototype.playing = function() {
@@ -611,7 +622,7 @@ Player.prototype.startRecording = function(type, callback) {
     a.startRecording(type);
   });
   if (this.selected !== this.actors.length) {
-    this.recordingTimer = window.setInterval(callback, 40);
+    this.recordingTimer = window.setInterval(callback, 40 / Math.abs(this.speed));
   }
 };
 Player.prototype.recordKeyframe = function(keyframe) {
@@ -637,6 +648,7 @@ Player.prototype.play = function() {
           {offset: 0.0, width: "0%"},
           {offset: 1.0, width: "100%"},
         ], this.duration));
+  this.progressPlayer.playbackRate = this.speed;
   for (var i = 0; i < this.actors.length; ++i) {
     this.actors[i].play();
   }
@@ -740,5 +752,14 @@ Player.prototype.playPause = function() {
     } else {
       this.pause();
     }
+  }
+};
+Player.prototype.setSpeed = function(speed) {
+  this.speed = speed;
+  if (this.progressPlayer) {
+    this.progressPlayer.playbackRate = speed;
+  }
+  for (var i = 0; i < this.actors.length; ++i) {
+    this.actors[i].setSpeed(speed);
   }
 };

@@ -59,6 +59,9 @@ var Toolbox = function(rootElement, player) {
   document.getElementById("share-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();
   });
+  document.getElementById("play-speed").addEventListener("change", function() {
+    player.setSpeed(document.getElementById("play-speed").value);
+  });
 };
 Toolbox.prototype = {};
 Toolbox.prototype.toolSelected = function() {
