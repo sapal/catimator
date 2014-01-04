@@ -58,3 +58,13 @@
 .selected .scale {
   background-color: rgba(0,255,0,.4);
 }
+@media (min-aspect-ratio: 4/3) {
+  #camera {
+    width: 100vh;
+  }
+}
+@media (max-aspect-ratio: 4/3) {
+  #camera {
+    width: 75vw;
+  }
+}

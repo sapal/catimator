@@ -1,5 +1,14 @@
 #camera {
-  width: 75%;
   border: none;
   overflow: hidden;
+}
+@media (min-aspect-ratio: 4/3) {
+  #camera {
+    width: 133.3vh;
+  }
+}
+@media (max-aspect-ratio: 4/3) {
+  #camera {
+    width: 100vw;
+  }
 }

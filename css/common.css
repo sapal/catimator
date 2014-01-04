@@ -17,7 +17,6 @@ html, body, #editor, #scene {
 }
 #camera {
   position: relative;
-  width: 50%;
   border: 5px dashed black;
   margin: 0;
   -moz-box-sizing: content-box;
