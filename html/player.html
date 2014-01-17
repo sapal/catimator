@@ -4,13 +4,18 @@
     <meta charset="utf-8">
     <title>Catimator player</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta property="og:title" content="Catimator Animation" />
+    <meta property="og:type" content="video.other" />
+    <meta property="og:url" content="http://{{.Root}}/player/{{.Id}}/" />
+    <meta property="og:image" content="http://{{.Root}}/images/icon/icon_512.png" />
+    <meta property="og:description" content="Short animation created with Catimator." />
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/player.css">
     <link rel="shortcut icon" sizes="196x196" href="/images/icon/icon_196.png">
     <script src="/js/lib/web-animations.js"></script>
     <script src="/js/animation.js"></script>
     <script src="/js/player.js"></script>
-    <script src="/animation/{{.}}"></script>
+    <script src="/animation/{{.Id}}"></script>
   </head>
   <body>
     <div id="scene">
@@ -21,7 +26,7 @@
           <div id="progress" title="Seek"><div id="bar"></div></div>
           <div id="fullscreen"></div>
         </div>
-        <a href="/editor/{{.}}"><div id="edit" title="Edit"></div></a>
+        <a href="/editor/{{.Id}}"><div id="edit" title="Edit"></div></a>
       </div>
     </div>
   </body>

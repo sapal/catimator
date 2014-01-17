@@ -25,11 +25,22 @@ type Animation struct {
 	ParentKey *datastore.Key
 }
 
+type TemplateData struct {
+	Root string
+	Id string
+}
+
+func createTemplateData(c appengine.Context, id string) TemplateData {
+	hostname := appengine.DefaultVersionHostname(c)
+	return TemplateData{hostname, id}
+}
+
 var htmlPlayerTemplate = template.Must(template.ParseFiles("html/player.html"))
 
 func htmlPlayer(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
 	id := r.URL.Path[len("/player/"):]
-	if err := htmlPlayerTemplate.Execute(w, id); err != nil {
+	if err := htmlPlayerTemplate.Execute(w, createTemplateData(c, id)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -37,8 +48,9 @@ func htmlPlayer(w http.ResponseWriter, r *http.Request) {
 var htmlEditorTemplate = template.Must(template.ParseFiles("html/editor.html"))
 
 func htmlEditor(w http.ResponseWriter, r *http.Request) {
+	c := appengine.NewContext(r)
 	id := r.URL.Path[len("/editor/"):]
-	if err := htmlEditorTemplate.Execute(w, id); err != nil {
+	if err := htmlEditorTemplate.Execute(w, createTemplateData(c, id)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
