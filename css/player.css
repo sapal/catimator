@@ -38,6 +38,12 @@
   transition: 2s;
   opacity: 0;
 }
+#scene, #edit, #control {
+  cursor: default; 
+}
+#scene.hidden, #edit.hidden, #control.hidden {
+  cursor: none;
+}
 #play-pause, #fullscreen, #edit {
   background-origin: content-box;
   background-repeat: no-repeat;

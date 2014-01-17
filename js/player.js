@@ -10,9 +10,10 @@ window.addEventListener("load", function() {
   var bar = document.getElementById("bar");
   var progress = document.getElementById("progress");
   var edit = document.getElementById("edit");
+  var scene = document.getElementById("scene");
   
   var hide = function(doHide) {
-    var elements = [control, edit];
+    var elements = [control, edit, scene];
     for (var i = 0; i < elements.length; ++i){
       var element = elements[i];
       if (doHide) {
@@ -37,14 +38,26 @@ window.addEventListener("load", function() {
     hide(false);
     updateHideTimeout();
   };
+  var updatePlayButton = function() {
+    if (player.ended) {
+      playPauseButton.classList.remove("paused");
+      playPauseButton.classList.add("ended");
+      playPauseButton.title = "Rewind";
+    } else {
+      playPauseButton.classList.remove("ended");
+      if (player.paused()) {
+        playPauseButton.classList.add("paused");
+        playPauseButton.title = "Play";
+      } else {
+        playPauseButton.classList.remove("paused");
+        playPauseButton.title = "Pause";
+      }
+    }
+  };
+  
   var playPause = function() {
     player.playPause();
-    playPauseButton.classList.remove("ended");
-    if (player.paused()) {
-      playPauseButton.classList.add("paused");
-    } else {
-      playPauseButton.classList.remove("paused");
-    }
+    updatePlayButton();
     updateHideTimeout();
   };
   
@@ -56,29 +69,46 @@ window.addEventListener("load", function() {
       playPause();
     }
   });
-  document.addEventListener("mousemove", show);
+  
+  /* Workaround for chrome bug:
+  https://code.google.com/p/chromium/issues/detail?id=103041
+  */
+  var lastMouseMove = {x: 0, y: 0};
+  document.addEventListener("mousemove", function(e) {
+    if (e.x == lastMouseMove.x &&
+      e.y == lastMouseMove.y) {
+      return;
+    } else {
+      lastMouseMove.x = e.x;
+      lastMouseMove.y = e.y;
+    }
+    show();
+  });
   document.addEventListener("touch", show);
   document.addEventListener("click", show);
   player.addEventListener("end", show);
-  player.addEventListener("end", function() {
-    playPauseButton.classList.add("ended");
-  });
+  player.addEventListener("end", updatePlayButton);
   playPauseButton.addEventListener("click", function(e) {
     playPause();
     e.stopPropagation();
     return false;
   }, true);
+  
+  fullscreenButton.title = "Fullscreen";
   fullscreenButton.addEventListener("click", function() {
     fullscreenButton.classList.toggle("fullscreen");
     if (fullscreenButton.classList.contains("fullscreen")) {
+      fullscreenButton.title = "Exit fullscreen";
       requestFullScreen();
     } else {
+      fullscreenButton.title = "Fullscreen";
       cancelFullScreen();
     }
   });
 
   progress.addEventListener("click", function(e) {
     player.seek(e.offsetX / progress.clientWidth * player.duration);
+    updatePlayButton();
     e.stopPropagation();
     return false;
   }, true);
