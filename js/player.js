@@ -95,7 +95,7 @@ window.addEventListener("load", function() {
   }, true);
   
   fullscreenButton.title = "Fullscreen";
-  fullscreenButton.addEventListener("click", function() {
+  fullscreenButton.addEventListener("click", function(e) {
     fullscreenButton.classList.toggle("fullscreen");
     if (fullscreenButton.classList.contains("fullscreen")) {
       fullscreenButton.title = "Exit fullscreen";
@@ -104,7 +104,9 @@ window.addEventListener("load", function() {
       fullscreenButton.title = "Fullscreen";
       cancelFullScreen();
     }
-  });
+    e.stopPropagation();
+    return false;
+  }, true);
 
   progress.addEventListener("click", function(e) {
     player.seek(e.offsetX / progress.clientWidth * player.duration);
