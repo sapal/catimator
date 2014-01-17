@@ -169,7 +169,8 @@ window.addEventListener("load", function() {
     return false;
   });
   progress.addEventListener("click", function(e) {
-    player.seek(e.offsetX / progress.clientWidth * player.duration);
+    var x = e.offsetX===undefined ? e.layerX : e.offsetX;
+    player.seek(x / progress.clientWidth * player.duration);
   });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 

@@ -75,7 +75,7 @@ window.addEventListener("load", function() {
   */
   var lastMouseMove = {x: 0, y: 0};
   document.addEventListener("mousemove", function(e) {
-    if (e.x == lastMouseMove.x &&
+    if (e.x !== undefined && e.x == lastMouseMove.x &&
       e.y == lastMouseMove.y) {
       return;
     } else {
@@ -109,7 +109,8 @@ window.addEventListener("load", function() {
   }, true);
 
   progress.addEventListener("click", function(e) {
-    player.seek(e.offsetX / progress.clientWidth * player.duration);
+    var x = e.offsetX===undefined ? e.layerX : e.offsetX;
+    player.seek(x / progress.clientWidth * player.duration);
     updatePlayButton();
     e.stopPropagation();
     return false;
