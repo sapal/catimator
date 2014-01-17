@@ -9,6 +9,26 @@ var saveToFile = function(data, filename) {
   document.body.removeChild(link);
 };
 
+var callPrefixed = function(thisElement, functionName) {
+  var prefix = ["", "moz", "webkit"];
+  for (var i = 0; i < prefix.length; ++i) {
+    var name = prefix[i] + functionName;
+    name = name.charAt(0).toLowerCase() + name.slice(1);
+    if (name in thisElement) {
+      thisElement[name]();
+      break;
+    }
+  }
+};
+
+var requestFullScreen = function() {
+  callPrefixed(document.body, "RequestFullScreen");
+};
+
+var cancelFullScreen = function() {
+  callPrefixed(document, "CancelFullScreen");
+};
+
 var stableSort = function(a, cmp) {
   var b = a.map(function(el, i) {
     return {idx: i, el: el};
@@ -561,10 +581,14 @@ var Player = function(cameraElement, progressElement, duration) {
   this.progressPlayer = null;
   this.recordingTimer = null;
   this.setSpeed(1);
+  this.eventListeners = {};
+  this.ended = false;
+  var player = this;
+  this.addEventListener("end", function() {player.ended = true;});
 };
 Player.prototype = {};
 Player.prototype.playing = function() {
-  return this.progressPlayer && this.progressPlayer.paused == false;
+  return this.progressPlayer && !this.progressPlayer.paused && !this.ended;
 };
 Player.prototype.addActor = function(id, data, width) {
   var a = new Actor(id, data, width, this.duration);
@@ -639,7 +663,20 @@ Player.prototype.endRecording = function() {
   window.clearInterval(this.recordingTimer);
   this.recordingTimer = null;
 };
+Player.prototype._addEventListener = function(type, listener) {
+  if (this.progressPlayer && this.progressPlayer.source) {
+    this.progressPlayer.source.addEventListener(type, listener);
+  }
+};
+Player.prototype.addEventListener = function(type, listener) {
+  if (!this.eventListeners[type]) {
+    this.eventListeners[type] = [];
+  }
+  this.eventListeners[type].push(listener);
+  this._addEventListener(type, listener);
+};
 Player.prototype.play = function() {
+  this.ended = false;
   if (this.playing()) {
     return;
   }
@@ -649,6 +686,13 @@ Player.prototype.play = function() {
           {offset: 1.0, width: "100%"},
         ], this.duration));
   this.progressPlayer.playbackRate = this.speed;
+  for (var listenerType in this.eventListeners) {
+    for (var i = 0; i < this.eventListeners[listenerType].length; ++i) {
+      this._addEventListener(
+        listenerType, 
+        this.eventListeners[listenerType][i]);
+    }
+  }
   for (var i = 0; i < this.actors.length; ++i) {
     this.actors[i].play();
   }

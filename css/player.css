@@ -12,3 +12,64 @@
     width: 100vw;
   }
 }
+#control {
+  transition: .2s;
+  z-index: 1;
+  position: absolute;
+  bottom: 2%;
+  left: 1.5%;
+  height: 8%;
+  width: 97%;
+  background-color: rgba(0,0,0,0.8);
+  border-radius: 2vmin;
+  opacity: 1;
+}
+#control.hidden {
+  transition: 2s;
+  opacity: 0;
+}
+#play-pause, #fullscreen {
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  background-color: white;
+  position: absolute;
+  top: 10%;
+  width: 4.9%;
+  padding: .75%;
+  height: 80%;
+  border-radius: 2vmin;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#play-pause {
+  left: 0.6%;
+  background-image: url("/images/buttons/pause.png");
+}
+#fullscreen {
+  right: 0.6%;
+  background-image: url("/images/buttons/fullscreen.png");
+}
+#fullscreen.fullscreen {
+  background-image: url("/images/buttons/smallscreen.png");
+  background-origin: content-box;
+}
+#play-pause.paused {
+  background-image: url("/images/buttons/play.png");
+}
+#play-pause.ended {
+  background-image: url("/images/buttons/rewind.png");
+}
+#progress {
+  background-color: rgba(255,255,255,255);
+  position: absolute;
+  height: 80%;
+  top: 10%;
+  left: 6.1%;
+  width: 87.8%;
+  border-radius: 2vmin;
+  overflow: hidden;
+}
+#bar {
+  border-radius: 2vmin;
+}

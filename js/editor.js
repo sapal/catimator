@@ -219,15 +219,7 @@ window.addEventListener("load", function() {
     splashscreen.style.display = "block";
     splashscreen.addEventListener("click", function() {
       splashscreen.style.display = "none";
-      var prefix = ["moz", "webkit", ""];
-      for (var i = 0; i < prefix.length; ++i) {
-        var name = prefix[i] + "RequestFullScreen";
-        name = name.charAt(0).toLowerCase() + name.slice(1);
-        if (name in document.body) {
-          document.body[name]();
-          break;
-        }
-      }
+      requestFullScreen();
     });
     script.addEventListener("load", function() {
       var hammer = Hammer(editor, {
