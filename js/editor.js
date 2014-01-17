@@ -22,7 +22,7 @@ var Toolbox = function(rootElement, player) {
       if (!button.classList.contains("button")) {
         document.addEventListener("keypress", function(e) {
           var keyCode = e.keyCode || e.which;
-          if (toolbox.toolSelected() && keyCode === button.id.charCodeAt(0)) {
+          if (toolbox.keyboardShortcutsEnabled() && keyCode === button.id.charCodeAt(0)) {
             toolbox.select(idx);
             e.stopPropagation();
             return false;
@@ -32,9 +32,6 @@ var Toolbox = function(rootElement, player) {
       }
     })(i);
   }
-  document.getElementById("select-button").addEventListener("click", function(e) {
-    player.selectNextActor();
-  });
   document.getElementById("delete-button").addEventListener("click", function(e) {
     player.removeSelectedActor();
   });
@@ -64,11 +61,17 @@ var Toolbox = function(rootElement, player) {
   });
 };
 Toolbox.prototype = {};
-Toolbox.prototype.toolSelected = function() {
-  return !this.buttons[this.selected].classList.contains("button");
+Toolbox.prototype.recordToolSelected = function() {
+  return this.buttons[this.selected].classList.contains("record");
+};
+Toolbox.prototype.selectToolSelected = function() {
+  return this.buttons[this.selected].id === "selection";
+};
+Toolbox.prototype.keyboardShortcutsEnabled = function() {
+  return this.recordToolSelected() || this.selectToolSelected();
 };
 Toolbox.prototype.select = function(idx) {
-  if (this.toolSelected()) {
+  if (this.recordToolSelected()) {
     this.player.endRecording();
   }
   this.buttons[this.selected].classList.remove("selected");
@@ -141,7 +144,7 @@ window.addEventListener("load", function() {
   document.addEventListener("mousedown", function(e) {
     var startX = mouseX;
     var startY = mouseY;
-    if (toolbox.toolSelected() && !player.recording()) {
+    if (toolbox.recordToolSelected() && !player.recording()) {
       player.startRecording(toolbox.tool(), function() {
         var offset = player.position();
         var selected = player.selectedActor();
@@ -150,6 +153,8 @@ window.addEventListener("load", function() {
           mouseX - camera.offsetLeft, mouseY - camera.offsetTop);
         player.recordKeyframe(new Keyframe(offset, value));
       });
+    } else if (toolbox.selectToolSelected()) {
+      player.selectActor(mouseX, mouseY);
     }
   });
 
@@ -174,13 +179,13 @@ window.addEventListener("load", function() {
   });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
-    if (toolbox.toolSelected() && keyCode ===  32) { // Space
+    if (toolbox.keyboardShortcutsEnabled() && keyCode ===  32) { // Space
       player.playPause();
     }
   });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
-    if (toolbox.toolSelected() && keyCode ===  46) { // Delete
+    if (toolbox.keyboardShortcutsEnabled() && keyCode ===  46) { // Delete
       player.removeSelectedActor();
     }
   });
@@ -234,7 +239,7 @@ window.addEventListener("load", function() {
       var startRotation = 0, startScale = 1, startOpacity = 1;
       var rotation = 0, scale = 1, opacity = 1;
       hammer.on("touch", function(e) {
-        if (toolbox.toolSelected() && player.selectedActor()) {
+        if (toolbox.recordToolSelected() && player.selectedActor()) {
           rotation = 0;
           startRotation = player.selectedActor().getValue(player.position(), "rotation").r;
           scale = 1;
@@ -242,7 +247,7 @@ window.addEventListener("load", function() {
           opacity = 1;
           startOpacity = Math.max(0.01, player.selectedActor().getValue(player.position(), "opacity").o);
           player.startRecording(toolbox.tool(), function() {
-            if (!toolbox.toolSelected()) {
+            if (!toolbox.recordToolSelected()) {
               player.endRecording();
               return;
             }
@@ -253,6 +258,8 @@ window.addEventListener("load", function() {
               startRotation + rotation, startScale * scale, startOpacity * opacity);
             player.recordKeyframe(new Keyframe(offset, value));
           });
+        } else if (toolbox.selectToolSelected()) {
+          player.selectActor(tochX, touchY);
         }
       });
       hammer.on("hold", function(e) {

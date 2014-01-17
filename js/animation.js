@@ -563,6 +563,10 @@ Actor.prototype.position = function(camera) {
       (r.left + r.right)/2 - this.cameraElement.offsetLeft,
       (r.top + r.bottom)/2 - this.cameraElement.offsetTop);
 };
+Actor.prototype.containsPoint = function(x, y) {
+  var rect = this.elements["image"].getBoundingClientRect();
+  return rect.left <= x && x <= rect.right && rect.top <= y && y <= rect.bottom;
+};
 Actor.prototype.setSpeed = function(speed) {
   this.speed = speed;
   for (var type in Keyframe.types) {
@@ -635,6 +639,19 @@ Player.prototype.selectNextActor = function() {
   this.selected = (this.selected + 1) % (this.actors.length + 1);
   this._updateSelected();
 };
+Player.prototype.selectActor = function(x, y) {
+  this.endRecording();
+  var newSelected = this.actors.length;
+  for (var i = 0; i < this.actors.length; ++i) {
+    var idx = ((this.selected + 1 + i) % this.actors.length);
+    if (this.actors[idx].containsPoint(x, y)) {
+      newSelected = idx;
+      break;
+    }
+  }
+  this.selected = newSelected;
+  this._updateSelected();
+}
 Player.prototype._withSelected = function(f) {
   if (this.selected === this.actors.length) {
     return;
