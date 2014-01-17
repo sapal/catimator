@@ -9,8 +9,18 @@ window.addEventListener("load", function() {
   var fullscreenButton = document.getElementById("fullscreen");
   var bar = document.getElementById("bar");
   var progress = document.getElementById("progress");
-  var hide = function() {
-    control.classList.add("hidden");
+  var edit = document.getElementById("edit");
+  
+  var hide = function(doHide) {
+    var elements = [control, edit];
+    for (var i = 0; i < elements.length; ++i){
+      var element = elements[i];
+      if (doHide) {
+        element.classList.add("hidden");
+      } else {
+        element.classList.remove("hidden");
+      }
+    }
   };
   var hideTimeout = null;
   var updateHideTimeout = function() {
@@ -18,13 +28,13 @@ window.addEventListener("load", function() {
       window.clearTimeout(hideTimeout);
     }
     if (player.playing()) {
-      hideTimeout = setTimeout(hide, 2000);
+      hideTimeout = setTimeout(function() {hide(true);}, 2000);
     } else {
-      control.classList.remove("hidden");
+      hide(false);
     }
   };
   var show = function() {
-    control.classList.remove("hidden");
+    hide(false);
     updateHideTimeout();
   };
   var playPause = function() {
