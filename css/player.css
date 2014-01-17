@@ -56,7 +56,7 @@
   box-sizing: border-box;
   background-color: white;
 }
-#play-pause:hover, #fullscreen:hover, #edit:hover {
+#play-pause:hover, #fullscreen:hover, #edit:hover, #progress:hover {
   background-color: rgba(200,200,200,1.0);
 }
 #play-pause, #fullscreen {
