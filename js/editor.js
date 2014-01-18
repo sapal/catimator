@@ -228,11 +228,6 @@ window.addEventListener("load", function() {
     var script = document.createElement("script");
     script.src = "/js/lib/hammer.js";
     splashscreen.appendChild(script);
-    splashscreen.style.display = "block";
-    splashscreen.addEventListener("click", function() {
-      splashscreen.style.display = "none";
-      requestFullScreen();
-    });
     script.addEventListener("load", function() {
       var hammer = Hammer(editor, {
         transform_always_block: true,
