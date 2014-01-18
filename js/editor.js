@@ -58,13 +58,21 @@ var Toolbox = function(rootElement, player, splashscreen) {
     return false;
   }, true);
   document.getElementById("add-image-button").addEventListener("click", function(e) {
-    var images = document.getElementById("add-image-input").value;
-    var match = /([^.\/]*)\.[^\/]*/.exec(image)
-    var id = "custom-actor-image";
-    if (match !== null) {
-      id = match[1];
+    var imageURLs = document.getElementById("add-image-input").value.split(",");
+    var images = [];
+    var id = null;
+    for (var i = 0; i < imageURLs.length; ++i) {
+      var imageURL = imageURLs[i];
+      var match = /([^.\/]*)\.[^\/]*/.exec(imageURL);
+      if (id === null && match !== null) {
+        id = match[1];
+      }
+      images.push(imageURL);
     }
-    toolbox.player.addActor(id, {"type": "image", "images": [image]}, "50%");
+    if (id === null) {
+      id = "custom-actor-image";
+    }
+    toolbox.player.addActor(id, {"type": "image", "images": images}, "50%");
     splashscreen.style.display = "none";
     e.stopPropagation();
     return false;
