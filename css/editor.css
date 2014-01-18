@@ -25,16 +25,31 @@
 }
 #toolbox>div {
   position: relative;
-  border-radius: 2vmin;
-  padding: 2vmin;
   display: inline-block;
-  justify-content: center;
-  align-items: center;
-  background-color: red;
+  width: 6vmin;
+  height: 6vmin;
   z-index: 1;
 }
+#selection {
+  background-image: url("/images/buttons/select.png");
+}
+#translation {
+  background-image: url("/images/buttons/move.png");
+}
+#rotation {
+  background-image: url("/images/buttons/rotate.png");
+}
+#scale {
+  background-image: url("/images/buttons/scale.png");
+}
+#opacity {
+  background-image: url("/images/buttons/opacity.png");
+}
+#image {
+  background-image: url("/images/buttons/image.png");
+}
 #toolbox div.selected {
-  background-color: green;
+  background-color: red;
 }
 #add {
   text-align: center;

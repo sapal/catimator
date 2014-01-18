@@ -19,10 +19,11 @@ var Toolbox = function(rootElement, player) {
         e.stopPropagation();
         return false;
       });
-      if (!button.classList.contains("button")) {
+      if (toolbox.isATool(button)) {
         document.addEventListener("keypress", function(e) {
           var keyCode = e.keyCode || e.which;
-          if (toolbox.keyboardShortcutsEnabled() && keyCode === button.id.charCodeAt(0)) {
+          var shortcutCode = button.title.toLowerCase().charCodeAt(button.title.length - 2);
+          if (toolbox.keyboardShortcutsEnabled() && keyCode === shortcutCode) {
             toolbox.select(idx);
             e.stopPropagation();
             return false;
@@ -66,6 +67,9 @@ var Toolbox = function(rootElement, player) {
   });
 };
 Toolbox.prototype = {};
+Toolbox.prototype.isATool = function(element) {
+  return element.id === "selection" || element.classList.contains("record");
+};
 Toolbox.prototype.recordToolSelected = function() {
   return this.buttons[this.selected].classList.contains("record");
 };

@@ -18,13 +18,13 @@
     <div id="editor">
       <div id="splashscreen"><div>Start</div></div>
       <div id="toolbox">
-        <div id="selection">Select</div>
-        <div id="translation" class="record">TR</div>
-        <div id="rotation" class="record">RT</div>
-        <div id="scale" class="record">SC</div>
-        <div id="opacity" class="record">OP</div>
-        <div id="image" class="record">IM</div>
-        <div id="add" class="button">
+        <div id="selection" class="button rounded" title="Select (P)"></div>
+        <div id="translation" class="record button rounded" title="Move (M)"></div>
+        <div id="rotation" class="record button rounded" title="Rotate (R)"></div>
+        <div id="scale" class="record button rounded" title="Scale (S)"></div>
+        <div id="opacity" class="record button rounded" title="Opacity (O)"></div>
+        <div id="image" class="record button rounded" title="Image (I)"></div>
+        <div id="add">
           <span class="button-text">ADD</span>
           <span class="button-content">
             <label for="add-image-input">Image:</label>
@@ -42,13 +42,13 @@
             <input type="button" id="add-text-button" value="Add text">
           </span>
         </div>
-        <div id="deletion" class="button">
+        <div id="deletion">
           <span class="button-text">Delete</span>
           <span class="button-content">
             <input type="button" id="delete-button" value="Delete">
           </span>
         </div>
-        <div id="share" class="button">
+        <div id="share">
           <span class="button-text">SHARE</span>
           <form id="share-form" action="/store" method="post" class="button-content">
             <input type="hidden" id="animation-data" name="animation-data" value="">
