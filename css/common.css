@@ -45,11 +45,6 @@ html, body, #editor, #scene {
   height: 10%;
   top: -13%;
 } 
-#progress:before {
-  content: "";
-  display: block;
-  padding-top: 10%;
-}
 #bar {
   position:absolute;
   top: 0;
