@@ -117,12 +117,23 @@
   position: relative;
   height: 100%;
   width: 30%;
-  display: table;
+  background-size: 66%;
+  background-position: center; 
 }
-#speed-value {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
+#speed-handle.speed1 {
+  background-image: url("/images/buttons/backward.png");
+}
+#speed-handle.speed2 {
+  background-image: url("/images/buttons/backward-slow.png");
+}
+#speed-handle.speed3 {
+  background-image: url("/images/buttons/forward-slow.png");
+}
+#speed-handle.speed4 {
+  background-image: url("/images/buttons/forward.png");
+}
+#speed-handle.speed5 {
+  background-image: url("/images/buttons/forward-fast.png");
 }
 #progress {
   width: 62.3%;

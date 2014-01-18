@@ -55,13 +55,22 @@ var Toolbox = function(rootElement, player) {
     document.getElementById("animation-data").value = player.serialize();
   });
   var lastSpeed = 1;
+  var speeds = [-2, -0.5, 0, 0.5, 1.5, 3];
   new Dragdealer('speed-slider', {
     x: .6666,
     animationCallback: function(x, y) {
       var value = (x * 3 - 1);
       if (Math.abs(value - lastSpeed) < 0.1) return;
       lastSpeed = value;
-      document.getElementById('speed-value').innerText = (Math.round(value * 10) / 10);
+      var speedIndicator = document.getElementById("speed-handle");
+      for (var i = 1; i < speeds.length; ++i) {
+        var className = "speed" + i;
+        if (speeds[i-1] <= value && value < speeds[i]) {
+          speedIndicator.classList.add(className);
+        } else {
+          speedIndicator.classList.remove(className);
+        }
+      }
       player.setSpeed(value);
     }
   });
