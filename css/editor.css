@@ -99,8 +99,11 @@
   width: 10vmin;
   background-image: none;
 }
-#toolbox div.selected:not(:hover) {
+#toolbox div.selected {
   background-color: red;
+}
+#toolbox div.selected:hover {
+  background-color: rgba(200,0,0,1);
 }
 #toolbox .selected .button-content {
   display: inline;
