@@ -51,7 +51,7 @@ var Toolbox = function(rootElement, player) {
     var style = document.getElementById("add-text-type").value;
     toolbox.player.addActor(id, {"type": "text", "text": text, "style": style}, "40%");
   });
-  document.getElementById("share-button").addEventListener("click", function(e) {
+  document.getElementById("save-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();
   });
   var lastSpeed = 1;

@@ -24,8 +24,7 @@
         <div id="scale" class="record button rounded" title="Scale (S)"></div>
         <div id="opacity" class="record button rounded" title="Opacity (O)"></div>
         <div id="image" class="record button rounded" title="Image (I)"></div>
-        <div id="add">
-          <span class="button-text">ADD</span>
+        <div id="add" class="button rounded" title="Add">
           <span class="button-content">
             <label for="add-image-input">Image:</label>
             <input type="text" id="add-image-input">
@@ -42,17 +41,16 @@
             <input type="button" id="add-text-button" value="Add text">
           </span>
         </div>
-        <div id="deletion">
-          <span class="button-text">Delete</span>
+        <div id="delete" class="button rounded" title="Delete">
           <span class="button-content">
             <input type="button" id="delete-button" value="Delete">
           </span>
         </div>
-        <div id="share">
-          <span class="button-text">SHARE</span>
-          <form id="share-form" action="/store" method="post" class="button-content">
+        <div id="save" class="button rounded" title="Save">
+          <span class="button-text"></span>
+          <form id="save-form" action="/store" method="post" class="button-content">
             <input type="hidden" id="animation-data" name="animation-data" value="">
-            <input type="submit" id="share-button" value="Share">
+            <input type="submit" id="save-button" value="Save">
           </form>
         </div>
       </div>

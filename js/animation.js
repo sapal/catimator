@@ -874,6 +874,7 @@ var wireControlPanel = function(player, playPauseButton, progress, bar,
     document.addEventListener("click", show);
     player.addEventListener("end", show);
   }
+
   var updatePlayButton = function() {
     if (player.ended) {
       playPauseButton.classList.remove("paused");
@@ -890,6 +891,7 @@ var wireControlPanel = function(player, playPauseButton, progress, bar,
       }
     }
   };
+  playPauseButton.title = "Play";
   
   var playPause = function() {
     player.playPause();
