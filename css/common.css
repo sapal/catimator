@@ -125,3 +125,78 @@ html, body, #editor, #scene {
 .thought-right .decoration:after {
   right: 125%;
 }
+#edit, #control {
+  transition: .2s;
+  z-index: 1;
+  position: absolute;
+}
+#edit {
+  top: 2%;
+  right: 1.5%;
+  height: 8%;
+  width: 6%;
+  background-image: url("/images/buttons/edit.png");
+}
+#control {
+  bottom: 2%;
+  left: 1.5%;
+  height: 8%;
+  width: 97%;
+  background-color: rgba(0,0,0,0.8);
+  opacity: 1;
+}
+#edit.hidden, #control.hidden {
+  transition: 2s;
+  opacity: 0;
+}
+#scene, #edit, #control {
+  cursor: auto; 
+}
+#scene.hidden, #edit.hidden, #control.hidden {
+  cursor: none;
+}
+.button {
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-size: 100%;
+  padding: 0.75%;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  background-color: white;
+}
+#play-pause:hover, #fullscreen:hover, #edit:hover, #progress:hover {
+  background-color: rgba(200,200,200,1.0);
+}
+#play-pause, #fullscreen {
+  position: absolute;
+  top: 10%;
+  width: 4.9%;
+  height: 80%;
+}
+#play-pause {
+  left: 0.6%;
+  background-image: url("/images/buttons/pause.png");
+}
+#fullscreen {
+  right: 0.6%;
+  background-image: url("/images/buttons/fullscreen.png");
+}
+#fullscreen.fullscreen {
+  background-image: url("/images/buttons/smallscreen.png");
+  background-origin: content-box;
+}
+#play-pause.paused {
+  background-image: url("/images/buttons/play.png");
+}
+#play-pause.ended {
+  background-image: url("/images/buttons/rewind.png");
+}
+#progress {
+  background-color: rgba(255,255,255,255);
+  position: absolute;
+  height: 80%;
+  top: 10%;
+  left: 6.1%;
+  width: 87.8%;
+  overflow: hidden;
+}

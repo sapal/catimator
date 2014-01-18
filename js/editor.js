@@ -130,6 +130,8 @@ window.addEventListener("load", function() {
   var camera = document.getElementById("camera");
   var progress = document.getElementById("progress");
   var bar = document.getElementById("bar");
+  var playPauseButton = document.getElementById("play-pause");
+  var fullscreenButton = document.getElementById("fullscreen");
   player = new Player(camera, bar, 10);
   toolbox = new Toolbox(document.getElementById("toolbox"), player);
 
@@ -169,20 +171,6 @@ window.addEventListener("load", function() {
     }
   });
 
-  progress.addEventListener("mousedown", function(e) {
-    e.stopPropagation();
-    return false;
-  });
-  progress.addEventListener("click", function(e) {
-    var x = e.offsetX===undefined ? e.layerX : e.offsetX;
-    player.seek(x / progress.clientWidth * player.duration);
-  });
-  document.addEventListener("keydown", function(e) {
-    var keyCode = e.keyCode || e.which; 
-    if (toolbox.keyboardShortcutsEnabled() && keyCode ===  32) { // Space
-      player.playPause();
-    }
-  });
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which; 
     if (toolbox.keyboardShortcutsEnabled() && keyCode ===  46) { // Delete
@@ -282,6 +270,9 @@ window.addEventListener("load", function() {
       });
     });
   }
+  
+  wireControlPanel(player, playPauseButton, progress, bar,
+    fullscreenButton, [], []);
   player.deserialize(animation);
 });
 

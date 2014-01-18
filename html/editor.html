@@ -17,13 +17,6 @@
     <div id="editor">
       <div id="splashscreen"><div>Start</div></div>
       <div id="toolbox">
-        <div id="selection">Select</div>
-        <div id="deletion" class="button">
-          <span class="button-text">Delete</span>
-          <span class="button-content">
-            <input type="button" id="delete-button" value="Delete">
-          </span>
-        </div>
         <div id="playback" class="button">
           <span class="button-text">Playback</span>
           <span class="button-content">
@@ -36,6 +29,7 @@
             </span>
           </span>
         </div>
+        <div id="selection">Select</div>
         <div id="translation" class="record">TR</div>
         <div id="rotation" class="record">RT</div>
         <div id="scale" class="record">SC</div>
@@ -59,6 +53,12 @@
             <input type="button" id="add-text-button" value="Add text">
           </span>
         </div>
+        <div id="deletion" class="button">
+          <span class="button-text">Delete</span>
+          <span class="button-content">
+            <input type="button" id="delete-button" value="Delete">
+          </span>
+        </div>
         <div id="share" class="button">
           <span class="button-text">SHARE</span>
           <form id="share-form" action="/store" method="post" class="button-content">
@@ -70,7 +70,13 @@
       <div id="scene">
         <div id="camera">
           <div id="background"></div>
-          <div id="progress"><div id="bar"></div></div>
+          <div id="control" class="rounded">
+            <div id="play-pause" class="paused rounded button"></div>
+            <div id="progress" title="Seek" class="rounded">
+              <div id="bar" class="rounded"></div>
+            </div>
+            <div id="fullscreen" class="rounded button"></div>
+          </div>
         </div>
       </div>
     </div>

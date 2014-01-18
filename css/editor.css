@@ -68,3 +68,9 @@
     width: 75vw;
   }
 }
+.rounded {
+  border-radius: 1.5vmin;
+}
+#control {
+  bottom: -10%;
+}
