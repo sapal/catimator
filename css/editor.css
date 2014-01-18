@@ -128,7 +128,17 @@
   border-radius: 1.5vmin;
 }
 #control {
-  bottom: -10%;
+  height: 6vw;
+}
+@media (min-aspect-ratio: 4/3) {
+  #control {
+    position: relative;
+    margin: auto;
+    left: 0;
+    top: -10vh;
+    height: 8vh;
+    width: 130vh;
+  }
 }
 #speed-slider {
   position: absolute;
