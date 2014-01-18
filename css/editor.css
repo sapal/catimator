@@ -7,15 +7,11 @@
   background: blue;
   z-index: 2;
   text-align: center;
-  font-size: 20vmin;
-  border-radius: 10vw;
+  font-size: 8vmin;
+  border-radius: 10vmin;
   cursor: pointer;
   display: none;
-}
-#splashscreen div {
-  position: absolute;
-  top: 30vh;
-  width: 90vw;
+  opacity: 0.9;
 }
 #toolbox {
   float: left;
@@ -105,14 +101,18 @@
 #toolbox div.selected:hover {
   background-color: rgba(200,0,0,1);
 }
-#toolbox .selected .button-content {
-  display: inline;
-}
-#toolbox .button-content {
-  display: none;
-}
 .selected .scale {
   background-color: rgba(0,255,0,.4);
+}
+#close-button {
+  z-index: 3;
+  background-image: url("/images/buttons/close.png");
+  width: 5vmin;
+  height: 5vmin;
+  display: block;
+  position: absolute;
+  top: 5vmin;
+  right: 5vmin;
 }
 @media (min-aspect-ratio: 4/3) {
   #camera {

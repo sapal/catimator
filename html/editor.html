@@ -21,7 +21,36 @@
   </head>
   <body>
     <div id="editor">
-      <div id="splashscreen"><div>Start</div></div>
+      <div id="splashscreen">
+        <div id="close-button" class="button rounded" title="Close"></div>
+        <div id="add-dialog" class="dialog">
+          <h3>Add</h3>
+          <label for="add-image-input">Image:</label>
+          <input type="text" id="add-image-input">
+          <input type="button" id="add-image-button" value="Add image">
+          
+          <br>
+          
+          <label for="add-text-input">Text:</label>
+          <input type="text" id="add-text-input" value="Hello!">
+          <select id="add-text-type">
+            <option value="thought-left">Thought left</option>
+            <option value="thought-right">Thought right</option>
+          </select>
+          <input type="button" id="add-text-button" value="Add text">
+        </div>
+        <div id="delete-dialog" class="dialog">
+          <h3>Delete</h3>
+          <input type="button" id="delete-button" value="Delete">
+        </div>
+        <div id="save-dialog" class="dialog">
+          <h3>Save</h3>
+          <form id="save-form" action="/store" method="post">
+            <input type="hidden" id="animation-data" name="animation-data" value="">
+            <input type="submit" id="save-button" value="Save">
+          </form>
+        </div>
+      </div>
       <div id="toolbox">
         <div id="selection" class="button rounded" title="Select (P)"></div>
         <div id="translation" class="record button rounded" title="Move (M)"></div>
@@ -29,35 +58,9 @@
         <div id="scale" class="record button rounded" title="Scale (S)"></div>
         <div id="opacity" class="record button rounded" title="Opacity (O)"></div>
         <div id="image" class="record button rounded" title="Image (I)"></div>
-        <div id="add" class="button rounded" title="Add">
-          <span class="button-content">
-            <label for="add-image-input">Image:</label>
-            <input type="text" id="add-image-input">
-            <input type="button" id="add-image-button" value="Add image">
-            
-            <br>
-            
-            <label for="add-text-input">Text:</label>
-            <input type="text" id="add-text-input" value="Hello!">
-            <select id="add-text-type">
-              <option value="thought-left">Thought left</option>
-              <option value="thought-right">Thought right</option>
-            </select>
-            <input type="button" id="add-text-button" value="Add text">
-          </span>
-        </div>
-        <div id="delete" class="button rounded" title="Delete">
-          <span class="button-content">
-            <input type="button" id="delete-button" value="Delete">
-          </span>
-        </div>
-        <div id="save" class="button rounded" title="Save">
-          <span class="button-text"></span>
-          <form id="save-form" action="/store" method="post" class="button-content">
-            <input type="hidden" id="animation-data" name="animation-data" value="">
-            <input type="submit" id="save-button" value="Save">
-          </form>
-        </div>
+        <div id="add" class="button rounded" title="Add"></div>
+        <div id="delete" class="button rounded" title="Delete"></div>
+        <div id="save" class="button rounded" title="Save"></div>
       </div>
       <div id="scene">
         <div id="camera">

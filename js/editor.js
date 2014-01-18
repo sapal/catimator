@@ -1,6 +1,6 @@
 "use strict";
 
-var Toolbox = function(rootElement, player) {
+var Toolbox = function(rootElement, player, splashscreen) {
   this.rootElement = rootElement;
   this.player = player;
   this.buttons = rootElement.children;
@@ -14,12 +14,12 @@ var Toolbox = function(rootElement, player) {
         e.stopPropagation();
         return false;
       });
-      button.addEventListener("click", function(e) {
-        toolbox.select(idx);
-        e.stopPropagation();
-        return false;
-      });
       if (toolbox.isATool(button)) {
+        button.addEventListener("click", function(e) {
+          toolbox.select(idx);
+          e.stopPropagation();
+          return false;
+        });
         document.addEventListener("keypress", function(e) {
           var keyCode = e.keyCode || e.which;
           var shortcutCode = button.title.toLowerCase().charCodeAt(button.title.length - 2);
@@ -30,12 +30,33 @@ var Toolbox = function(rootElement, player) {
           }
           return true;
         });
+      } else {
+        button.addEventListener("click", function(e) {
+          for (var i = 0; i < splashscreen.children.length; ++i) {
+            var child = splashscreen.children[i];
+            if (child.classList.contains("dialog")) {
+              child.style.display = "none";
+            }
+          }
+          document.getElementById(button.id + "-dialog").style.display = "block";
+          splashscreen.style.display = "block";
+          e.stopPropagation();
+          return false;
+        });
       }
     })(i);
   }
+  document.getElementById("close-button").addEventListener("click", function(e) {
+    splashscreen.style.display = "none";
+    e.stopPropagation();
+    return false;
+  }, true);
   document.getElementById("delete-button").addEventListener("click", function(e) {
     player.removeSelectedActor();
-  });
+    splashscreen.style.display = "none";
+    e.stopPropagation();
+    return false;
+  }, true);
   document.getElementById("add-image-button").addEventListener("click", function(e) {
     var images = document.getElementById("add-image-input").value;
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
@@ -44,13 +65,19 @@ var Toolbox = function(rootElement, player) {
       id = match[1];
     }
     toolbox.player.addActor(id, {"type": "image", "images": [image]}, "50%");
-  });
+    splashscreen.style.display = "none";
+    e.stopPropagation();
+    return false;
+  }, true);
   document.getElementById("add-text-button").addEventListener("click", function(e) {
     var text = document.getElementById("add-text-input").value;
     var id = text;
     var style = document.getElementById("add-text-type").value;
     toolbox.player.addActor(id, {"type": "text", "text": text, "style": style}, "40%");
-  });
+    splashscreen.style.display = "none";
+    e.stopPropagation();
+    return false;
+  }, true);
   document.getElementById("save-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();
   });
@@ -145,13 +172,15 @@ var toolbox = null;
 window.addEventListener("load", function() {
   var mouseX = 0;
   var mouseY = 0;
+  var scene = document.getElementById("scene");
   var camera = document.getElementById("camera");
   var progress = document.getElementById("progress");
   var bar = document.getElementById("bar");
   var playPauseButton = document.getElementById("play-pause");
   var fullscreenButton = document.getElementById("fullscreen");
+  var splashscreen = document.getElementById("splashscreen");
   player = new Player(camera, bar, 10);
-  toolbox = new Toolbox(document.getElementById("toolbox"), player);
+  toolbox = new Toolbox(document.getElementById("toolbox"), player, splashscreen);
 
   document.addEventListener("keydown", function(e) {
     var keyCode = e.keyCode || e.which;
@@ -161,7 +190,7 @@ window.addEventListener("load", function() {
     }
   });
 
-  document.addEventListener("mousedown", function(e) {
+  scene.addEventListener("mousedown", function(e) {
     var startX = mouseX;
     var startY = mouseY;
     if (toolbox.recordToolSelected() && !player.recording()) {
@@ -224,7 +253,6 @@ window.addEventListener("load", function() {
   });
   
   if ("ontouchstart" in window) {
-    var splashscreen = document.getElementById("splashscreen");
     var script = document.createElement("script");
     script.src = "/js/lib/hammer.js";
     splashscreen.appendChild(script);
