@@ -803,6 +803,7 @@ Player.prototype.selectedActor = function() {
   return this.actors[this.selected];
 };
 Player.prototype.playPause = function() {
+  this.ended = false;
   if (this.paused()) {
     this.unpause();
   } else {
