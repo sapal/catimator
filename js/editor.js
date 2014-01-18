@@ -35,9 +35,6 @@ var Toolbox = function(rootElement, player) {
   document.getElementById("delete-button").addEventListener("click", function(e) {
     player.removeSelectedActor();
   });
-  document.getElementById("play-button").addEventListener("click", function() {
-    player.playPause();
-  });
   document.getElementById("add-image-button").addEventListener("click", function(e) {
     var images = document.getElementById("add-image-input").value;
     var match = /([^.\/]*)\.[^\/]*/.exec(image)
@@ -56,8 +53,16 @@ var Toolbox = function(rootElement, player) {
   document.getElementById("share-button").addEventListener("click", function(e) {
     document.getElementById("animation-data").value = player.serialize();
   });
-  document.getElementById("play-speed").addEventListener("change", function() {
-    player.setSpeed(document.getElementById("play-speed").value);
+  var lastSpeed = 1;
+  new Dragdealer('speed-slider', {
+    x: .6666,
+    animationCallback: function(x, y) {
+      var value = (x * 3 - 1);
+      if (Math.abs(value - lastSpeed) < 0.1) return;
+      lastSpeed = value;
+      document.getElementById('speed-value').innerText = (Math.round(value * 10) / 10);
+      player.setSpeed(value);
+    }
   });
 };
 Toolbox.prototype = {};

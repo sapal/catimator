@@ -63,6 +63,7 @@ html, body, #editor, #scene {
   -moz-user-select: none;
   user-select: none;
   user-drag: none;
+  vertical-align: middle;
 }
 .animated-object {
   position: absolute;
@@ -164,7 +165,7 @@ html, body, #editor, #scene {
   box-sizing: border-box;
   background-color: white;
 }
-#play-pause:hover, #fullscreen:hover, #edit:hover, #progress:hover {
+.button:hover {
   background-color: rgba(200,200,200,1.0);
 }
 #play-pause, #fullscreen {

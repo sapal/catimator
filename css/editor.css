@@ -23,7 +23,7 @@
   left: 1vmin;
   right: 1vmin;
 }
-#toolbox div {
+#toolbox>div {
   position: relative;
   border-radius: 2vmin;
   padding: 2vmin;
@@ -73,4 +73,28 @@
 }
 #control {
   bottom: -10%;
+}
+#speed-slider {
+  position: absolute;
+  right: 6.1%;
+  width: 25%;
+  height: 80%;
+  top: 10%;
+  padding: 0;
+  margin: 0;
+  background-color: red;
+}
+#speed-handle {
+  position: relative;
+  height: 100%;
+  width: 30%;
+  display: table;
+}
+#speed-value {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+#progress {
+  width: 62.3%;
 }

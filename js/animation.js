@@ -827,6 +827,7 @@ Player.prototype.setSpeed = function(speed) {
 
 var wireControlPanel = function(player, playPauseButton, progress, bar,
     fullscreenButton, others, autohide) {
+  var updateHideTimeout = function() {};
   if (autohide.length > 0) {
     var hide = function(doHide) {
       for (var i = 0; i < autohide.length; ++i){
@@ -839,7 +840,7 @@ var wireControlPanel = function(player, playPauseButton, progress, bar,
       }
     };
     var hideTimeout = null;
-    var updateHideTimeout = function() {
+    updateHideTimeout = function() {
       if (hideTimeout != null) {
         window.clearTimeout(hideTimeout);
       }

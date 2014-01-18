@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../css/editor.css">
     <link rel="shortcut icon" sizes="196x196" href="/images/icon/icon_196.png">
     <script src="/js/lib/web-animations.js"></script>
+    <script src="/js/lib/dragdealer.js"></script>
     <script src="/js/animation.js"></script>
     <script src="/js/editor.js"></script>
     <script src="/animation/{{.Id}}"></script>
@@ -17,18 +18,6 @@
     <div id="editor">
       <div id="splashscreen"><div>Start</div></div>
       <div id="toolbox">
-        <div id="playback" class="button">
-          <span class="button-text">Playback</span>
-          <span class="button-content">
-            <input type="button" id="play-button" value="Play/pause"><br>
-            <label for="play-speed">Speed:</label><br>
-            <span>
-              -3
-              <input type="range" id="play-speed" min="-3" max="3" step="0.1" value="1">
-              3
-            </span>
-          </span>
-        </div>
         <div id="selection">Select</div>
         <div id="translation" class="record">TR</div>
         <div id="rotation" class="record">RT</div>
@@ -75,6 +64,11 @@
             <div id="progress" title="Seek" class="rounded">
               <div id="bar" class="rounded"></div>
             </div>
+            <div id="speed-slider" class="dragdealer rounded" title="Speed">
+                <div id="speed-handle" class="handle rounded button">
+                  <span id="speed-value">1</span>
+                </div>
+              </div>
             <div id="fullscreen" class="rounded button"></div>
           </div>
         </div>
