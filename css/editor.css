@@ -4,14 +4,12 @@
   top: 5vh;
   width: 90vw;
   height: 90vh;
-  background: blue;
+  background: rgba(255,255,255,0.7);
   z-index: 2;
   text-align: center;
   font-size: 8vmin;
   border-radius: 10vmin;
-  cursor: pointer;
   display: none;
-  opacity: 0.9;
 }
 #toolbox {
   float: left;
