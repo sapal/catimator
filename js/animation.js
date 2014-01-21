@@ -290,7 +290,7 @@ var KeyframeTransformer = function(steps) {
   return transforms;
 }
 
-var Actor = function(id, data, width, duration) {
+var Actor = function(id, data, width, duration, speed) {
   this.id = id;
   this.data = data;
   this.width = width;
@@ -306,7 +306,7 @@ var Actor = function(id, data, width, duration) {
   for (var type in Keyframe.types) {
     this.keyframes[type] = [];
   }
-  this.setSpeed(1);
+  this.setSpeed(speed);
 };
 Actor.prototype = {};
 Actor.prototype.serialize = function() {
@@ -320,7 +320,7 @@ Actor.prototype.serialize = function() {
 };
 Actor.deserialize = function(string, camera) {
   var o = JSON.parse(string);
-  var a = new Actor(o.id, o.data, o.width, o.duration);
+  var a = new Actor(o.id, o.data, o.width, o.duration, 1);
   a.createElements(camera);
   for (var type in o.keyframes) {
     var k = o.keyframes[type].map(function(k) { return Keyframe.fromObject(type, k); });
@@ -595,7 +595,7 @@ Player.prototype.playing = function() {
   return this.progressPlayer && !this.progressPlayer.paused && !this.ended;
 };
 Player.prototype.addActor = function(id, data, width) {
-  var a = new Actor(id, data, width, this.duration);
+  var a = new Actor(id, data, width, this.duration, this.speed);
   a.createElements(this.cameraElement);
   if (this.selected === this.actors.length) {
     this.selected++;
