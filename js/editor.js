@@ -121,7 +121,9 @@ Toolbox.prototype.selectToolSelected = function() {
   return this.buttons[this.selected].id === "selection";
 };
 Toolbox.prototype.keyboardShortcutsEnabled = function() {
-  return this.recordToolSelected() || this.selectToolSelected();
+  var splashscreen = document.getElementById("splashscreen");
+  return (this.recordToolSelected() || this.selectToolSelected()) &&
+         (splashscreen.style.display == "none");
 };
 Toolbox.prototype.select = function(idx) {
   if (this.recordToolSelected()) {
