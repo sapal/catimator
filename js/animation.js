@@ -663,7 +663,7 @@ Player.prototype.startRecording = function(type, callback) {
     a.startRecording(type);
   });
   if (this.selected !== this.actors.length) {
-    this.recordingTimer = window.setInterval(callback, 40 / Math.abs(this.speed));
+    this.recordingTimer = window.setInterval(callback, 40);
   }
 };
 Player.prototype.recordKeyframe = function(keyframe) {
